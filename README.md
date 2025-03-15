@@ -46,16 +46,31 @@ pip install -r requirements.txt
 ```
 
 4. Configure as variáveis de ambiente:
-Crie um arquivo `.env` na raiz do projeto com:
-```
-SECRET_KEY="sua-chave-secreta"
-MAIL_USERNAME="seu-email@gmail.com"
-MAIL_PASSWORD="sua-senha-de-app"
-```
+   1. Copie o arquivo de exemplo:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   2. Edite o arquivo `.env` com suas configurações:
+   ```
+   # Configurações do Banco de Dados
+   DATABASE_URL=sqlite:///instance/database.db
+   
+   # Configurações de Upload
+   UPLOAD_FOLDER=uploads
+   MAX_CONTENT_LENGTH=16777216  # 16MB em bytes
+   
+   # Configurações de Segurança
+   SECRET_KEY="sua-chave-secreta"
+   
+   # Configurações de Email (opcional)
+   MAIL_USERNAME="seu-email@gmail.com"
+   MAIL_PASSWORD="sua-senha-de-app"
+   ```
 
 5. Inicialize o banco de dados:
 ```bash
-flask sync-db
+flask init-db
 ```
 
 6. Execute o servidor:
@@ -88,14 +103,19 @@ flask create-admin admin senha123
 
 ## 🔧 Comandos Úteis
 
-- Criar backup do banco:
+- Criar backup do banco (os backups são salvos na pasta backups/):
 ```bash
 flask backup
 ```
 
 - Restaurar backup:
 ```bash
-flask restore
+flask restore nome_do_backup
+```
+
+- Reinicializar banco de dados (apaga todos os dados):
+```bash
+flask init-db
 ```
 
 - Listar usuários:
@@ -113,10 +133,17 @@ compose/
 │   ├── static/      # Arquivos estáticos (CSS, JS, imagens)
 │   ├── templates/   # Templates HTML
 │   └── utils/       # Utilitários
-├── instance/        # Banco de dados
-├── migrations/      # Migrações do banco
-└── backups/         # Backups do banco
+├── instance/        # Banco de dados (não versionado)
+├── uploads/         # Arquivos de upload (não versionado)
+├── backups/         # Backups do banco (não versionado)
+└── migrations/      # Migrações do banco
 ```
+
+## ⚠️ Observações Importantes
+
+- Os diretórios `instance/`, `uploads/` e `backups/` não são versionados no git
+- Nunca compartilhe seu arquivo `.env` ou backups do banco de dados
+- Mantenha suas chaves secretas e senhas seguras
 
 ## 🐛 Problemas Conhecidos
 
