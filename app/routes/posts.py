@@ -70,57 +70,58 @@ def index():
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    """Rota para upload de novas fotos"""
-    if request.method == 'POST':
-        if 'photo' not in request.files:
+    if request.method == 'GET':
+        return render_template('posts/upload.html')
+    
+    try:
+        if 'file' not in request.files:
             return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
             
-        file = request.files['photo']
+        file = request.files['file']
         if file.filename == '':
             return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
             
-        if file and allowed_file(file.filename):
-            try:
-                # Processa a imagem com o filtro selecionado
-                filter_name = request.form.get('filter', 'normal')
-                processed_image = process_image(file, filter_name=filter_name)
-                
-                # Gera nome único para o arquivo
-                filename = secure_filename(file.filename)
-                base, ext = os.path.splitext(filename)
-                filename = f"{base}_{int(time.time())}.jpg"
-                
-                # Salva a imagem processada
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                file_path = os.path.join(upload_folder, filename)
-                
-                with open(file_path, 'wb') as f:
-                    f.write(processed_image.getvalue())
-                
-                # Cria o post
-                post = Post(
-                    image_path=filename,
-                    caption=request.form.get('caption'),
-                    user_id=current_user.id
-                )
-                db.session.add(post)
-                
-                # Processa as marcações de usuários
-                tagged_users = request.form.get('tagged_users', '').split(',')
-                if tagged_users and tagged_users[0]:  # Verifica se há usuários marcados
-                    for username in tagged_users:
-                        user = User.query.filter_by(username=username.strip()).first()
-                        if user:
-                            tag = Tag(post_id=post.id, user_id=user.id)
-                            db.session.add(tag)
-                
-                db.session.commit()
-                return jsonify({'success': True, 'message': 'Post criado com sucesso!'})
-                
-            except Exception as e:
-                return jsonify({'error': 'Erro ao processar imagem'}), 500
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
             
-    return render_template('posts/upload.html')
+        # Processa a imagem com o filtro selecionado
+        filter_name = request.form.get('filter', 'normal')
+        processed_image = process_image(file, filter_name)
+            
+        # Cria o diretório de uploads se não existir
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Gera um nome único para o arquivo
+        filename = secure_filename(file.filename)
+        base, ext = os.path.splitext(filename)
+        filename = f"{base}_{int(time.time())}.jpg"  # Sempre salva como JPG após processamento
+        filepath = os.path.join(upload_folder, filename)
+        
+        # Salva o arquivo processado
+        with open(filepath, 'wb') as f:
+            f.write(processed_image.getvalue())
+        
+        # Cria o post no banco de dados
+        post = Post(
+            image_path=filename,  # Salvamos apenas o nome do arquivo
+            caption=request.form.get('caption', ''),
+            user_id=current_user.id
+        )
+        db.session.add(post)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Imagem enviada com sucesso!'
+        })
+        
+    except Exception as e:
+        print(f"Erro no upload: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'error': f'Erro ao fazer upload: {str(e)}'
+        }), 500
 
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required

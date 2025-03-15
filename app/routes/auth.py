@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..extensions import db
 from ..models.user import User
 from ..email import send_password_reset_email
+from flask_mail import Message
+import secrets
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -91,6 +93,21 @@ def reset_password(username, code):
         user.clear_reset_code()
         db.session.commit()
         flash('Sua senha foi alterada com sucesso')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/reset_password.html')
+
+@bp.route('/reset-password', methods=['GET', 'POST'])
+def request_password_reset():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            token = secrets.token_urlsafe(32)
+            # Salvar token no banco de dados
+            # Enviar email com link de recuperação
+            flash('Se o email existir em nossa base de dados, você receberá instruções para recuperar sua senha.', 'info')
         return redirect(url_for('auth.login'))
     
     return render_template('auth/reset_password.html') 
