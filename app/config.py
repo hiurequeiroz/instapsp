@@ -13,7 +13,8 @@ class Config:
     
     # Configuração de upload
     UPLOAD_FOLDER = os.path.join('app', 'static', 'uploads')
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max-size 
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     
     # Configurações de email
     MAIL_SERVER = 'smtp.gmail.com'
