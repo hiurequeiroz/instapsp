@@ -227,7 +227,7 @@ def backup():
 
 def init_cli(app):
     """Inicializa comandos CLI"""
-    app.cli.add_command(reset_password)
+    app.cli.add_command(reset_password_command, "reset-user-password")
     app.cli.add_command(make_admin)
     app.cli.add_command(create_timeline_pref)
     app.cli.add_command(init_database)
@@ -238,19 +238,21 @@ def init_cli(app):
     app.cli.add_command(list_users)
     app.cli.add_command(create_admin)
 
-@click.command('reset-password')
+@click.command('reset-user-password')
 @click.argument('username')
+@click.argument('new_password')
 @with_appcontext
-def reset_password(username):
-    """Gera código de reset de senha para um usuário"""
+def reset_password_command(username, new_password):
+    """Redefine a senha de um usuário pelo terminal.
+    Uso: flask reset-user-password NOME_USUARIO NOVA_SENHA"""
     user = User.query.filter_by(username=username).first()
-    if not user:
-        click.echo('Usuário não encontrado.')
+    if user is None:
+        click.echo('Erro: Usuário não encontrado.')
         return
     
-    code = user.generate_reset_code()
-    click.echo(f'Código de reset gerado para {username}: {code}')
-    click.echo('Este código é válido por 1 hora.')
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    click.echo(f'Senha alterada com sucesso para o usuário {username}')
 
 @click.command('make-admin')
 @click.argument('username')

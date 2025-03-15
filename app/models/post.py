@@ -2,6 +2,7 @@ from datetime import datetime
 from ..extensions import db
 from .like import Like
 from .visibility import Visibility
+from flask import url_for
 
 class Post(db.Model):
     """Modelo para posts de fotos"""
@@ -30,3 +31,8 @@ class Post(db.Model):
         """Verifica se o post é visível para o usuário"""
         visibility = Visibility.query.filter_by(post_id=self.id, user_id=user.id).first()
         return visibility.is_visible if visibility else True  # Visível por padrão 
+
+    @property
+    def image_url(self):
+        """Retorna a URL da imagem para exibição"""
+        return url_for('static', filename=f'uploads/{self.image_path}') 
