@@ -1,5 +1,4 @@
 from flask import Flask
-from .config import Config
 from .extensions import db, login_manager, mail
 import os
 from .cli import init_cli
@@ -26,17 +25,14 @@ def create_app(test_config=None):
     """
     app = Flask(__name__)
     
-    # Configurações básicas
-    app.config.from_mapping(
-        SECRET_KEY=os.getenv('SECRET_KEY', 'dev'),
-        DATABASE=os.path.join(app.instance_path, os.getenv('DATABASE_NAME', 'database.db')),
-        UPLOAD_FOLDER=os.getenv('UPLOAD_FOLDER', 'uploads'),
-        MAX_CONTENT_LENGTH=int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))
-    )
+    # Carrega a configuração do config.py na raiz do projeto
+    from config import Config
+    app.config.from_object(Config)
+    Config.init_app(app)
     
     # Garantir que as pastas necessárias existam
     Path(app.instance_path).mkdir(exist_ok=True)
-    Path(app.config['UPLOAD_FOLDER']).mkdir(exist_ok=True)
+    Path(app.config.get('UPLOAD_FOLDER', 'uploads')).mkdir(exist_ok=True)
 
     # Inicializa as extensões com a app
     db.init_app(app)

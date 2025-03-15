@@ -5,15 +5,6 @@ from flask import current_app
 
 from alembic import context
 
-# Adicione estas importações
-from app.models.user import User
-from app.models.post import Post
-from app.models.comment import Comment
-from app.models.like import Like
-from app.models.tag import Tag
-from app.models.visibility import Visibility
-from app.models.timeline_preference import TimelinePreference
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
