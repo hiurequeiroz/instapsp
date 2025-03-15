@@ -11,7 +11,7 @@
                 <i class="fas fa-camera"></i>
                 Selecionar Imagem
             </label>
-            <input type="file" id="photo" name="photo" accept="image/*" required class="file-input">
+            <input type="file" id="photo" name="file" accept="image/*" required class="file-input">
             <div class="preview-container">
                 <img id="imagePreview" src="" alt="Preview" style="display: none;">
             </div>
@@ -215,9 +215,11 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
             window.location.href = '/';  // Redireciona para o feed
         } else {
             alert(data.error || 'Erro ao fazer upload');
+            console.error('Erro:', data.error);  // Log do erro no console
         }
     } catch (error) {
-        alert('Erro ao fazer upload');
+        console.error('Erro na requisição:', error);  // Log do erro no console
+        alert('Erro ao fazer upload: ' + error.message);
     } finally {
         loading.style.display = 'none';
     }
