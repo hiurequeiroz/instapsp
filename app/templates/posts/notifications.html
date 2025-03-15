@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Notificações{% endblock %}
+
+{% block content %}
+<div class="notifications-page">
+    <h1>Suas Notificações</h1>
+    
+    <div class="notifications-container">
+        {% if current_user.tagged_in %}
+            {% for post in current_user.tagged_in %}
+            <div class="notification-card">
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <span class="notification-time">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    <div class="notification-body">
+                        <div class="notification-image">
+                            <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post thumbnail">
+                        </div>
+                        <div class="notification-text">
+                            <p><strong>{{ post.author.username }}</strong> marcou você em uma foto</p>
+                            {% if post.caption %}
+                            <p class="post-caption">"{{ post.caption }}"</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        <a href="{{ url_for('posts.index') }}#post-{{ post.id }}" class="btn">Ver Post</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>Você não tem notificações no momento</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

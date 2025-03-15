@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - InstaPSP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <a href="{{ url_for('posts.index') }}" class="brand-logo">
+                <img src="{{ url_for('static', filename='images/psp.png') }}" alt="PSP Logo" class="nav-logo">
+                InstaPSP
+            </a>
+            {% if current_user.is_authenticated %}
+            <ul class="right">
+                <li>
+                    <a href="{{ url_for('posts.notifications') }}" class="notifications-link">
+                        <i class="fas fa-bell"></i>
+                        {% if current_user.tagged_in|length > 0 %}
+                        <span class="notifications-badge">{{ current_user.tagged_in|length }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li><a href="{{ url_for('posts.upload') }}" class="nav-link">
+                    <i class="fas fa-plus"></i> Postar
+                </a></li>
+                {% if current_user.is_admin %}
+                <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('auth.logout') }}">Sair</a></li>
+            </ul>
+            {% else %}
+            <ul class="right">
+                <li><a href="{{ url_for('auth.login') }}">Entrar</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Registrar</a></li>
+            </ul>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% endif %}
+</body>
+</html> 

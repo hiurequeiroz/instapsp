@@ -1,0 +1,125 @@
+BEGIN TRANSACTION;
+CREATE TABLE alembic_version (
+	version_num VARCHAR(32) NOT NULL, 
+	CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+);
+CREATE TABLE comment (
+	id INTEGER NOT NULL, 
+	text TEXT NOT NULL, 
+	created_at DATETIME, 
+	user_id INTEGER NOT NULL, 
+	post_id INTEGER NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES user (id), 
+	FOREIGN KEY(post_id) REFERENCES post (id)
+);
+INSERT INTO "comment" VALUES(1,'que bonito ','2025-02-24 20:16:34.928328',4,2);
+INSERT INTO "comment" VALUES(2,'cuti cuti','2025-02-24 20:17:38.543149',1,4);
+INSERT INTO "comment" VALUES(3,'😀','2025-02-24 20:18:20.121361',2,4);
+INSERT INTO "comment" VALUES(4,'😘','2025-02-24 20:18:25.234707',4,1);
+INSERT INTO "comment" VALUES(5,' Que Louco ','2025-02-24 20:18:27.295236',3,3);
+INSERT INTO "comment" VALUES(6,'Literalmente ','2025-02-24 20:19:11.965005',2,3);
+INSERT INTO "comment" VALUES(7,'pastor da Mantiqueira né?','2025-02-24 20:21:00.168650',4,4);
+INSERT INTO "comment" VALUES(8,'Legal🧑‍🎤','2025-02-24 20:21:05.089937',3,2);
+INSERT INTO "comment" VALUES(9,'Aventura pura','2025-02-24 20:30:27.083895',3,1);
+INSERT INTO "comment" VALUES(10,'não é assim que usa o plural, o artigo precisa estar no pluram também','2025-02-24 20:32:13.958680',1,8);
+INSERT INTO "comment" VALUES(11,'Bonitinho','2025-02-24 20:38:56.047439',3,8);
+INSERT INTO "comment" VALUES(12,'tbm não é pluram @mark','2025-02-24 20:53:21.201388',4,8);
+CREATE TABLE "like" (
+	id INTEGER NOT NULL, 
+	created_at DATETIME, 
+	user_id INTEGER NOT NULL, 
+	post_id INTEGER NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT unique_user_post_like UNIQUE (user_id, post_id), 
+	FOREIGN KEY(user_id) REFERENCES user (id), 
+	FOREIGN KEY(post_id) REFERENCES post (id)
+);
+INSERT INTO "like" VALUES(1,'2025-02-24 20:16:05.052486',4,3);
+INSERT INTO "like" VALUES(2,'2025-02-24 20:17:04.574871',2,4);
+INSERT INTO "like" VALUES(3,'2025-02-24 20:17:12.964729',2,3);
+INSERT INTO "like" VALUES(5,'2025-02-24 20:18:41.153673',3,2);
+INSERT INTO "like" VALUES(6,'2025-02-24 20:24:44.067436',4,6);
+INSERT INTO "like" VALUES(7,'2025-02-24 20:24:49.648422',3,6);
+INSERT INTO "like" VALUES(8,'2025-02-24 20:30:03.136191',3,1);
+INSERT INTO "like" VALUES(9,'2025-02-24 20:31:13.033938',3,7);
+INSERT INTO "like" VALUES(10,'2025-02-24 20:32:02.929625',4,8);
+INSERT INTO "like" VALUES(11,'2025-02-24 20:32:48.749005',2,7);
+INSERT INTO "like" VALUES(12,'2025-02-24 20:32:51.609108',2,6);
+INSERT INTO "like" VALUES(13,'2025-02-24 20:35:08.930764',4,7);
+INSERT INTO "like" VALUES(14,'2025-02-24 20:38:10.734985',3,8);
+INSERT INTO "like" VALUES(15,'2025-02-24 20:39:20.981820',3,3);
+INSERT INTO "like" VALUES(16,'2025-02-24 20:53:54.788470',4,4);
+CREATE TABLE post (
+	id INTEGER NOT NULL, 
+	image_path VARCHAR(150) NOT NULL, 
+	caption TEXT, 
+	created_at DATETIME, 
+	user_id INTEGER NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES user (id)
+);
+INSERT INTO "post" VALUES(1,'IMG_0382_1740427371.jpg','flor do deserto','2025-02-24 20:02:51.884436',1);
+INSERT INTO "post" VALUES(2,'IMG_20250110_081926_1740428100.jpg','Pantanal','2025-02-24 20:15:00.517857',2);
+INSERT INTO "post" VALUES(3,'Agora_uma_dessas_mulheres_da_imagem_anterior_esta_lavando_o_rosto__20250224_164106_0000_1740428150.jpg','Auto cuidado ','2025-02-24 20:15:50.581107',4);
+INSERT INTO "post" VALUES(4,'image_1740428187.jpg','Fofaaaaa
+','2025-02-24 20:16:27.284694',3);
+INSERT INTO "post" VALUES(5,'SAVE_20240408_195240_1740428435.jpg','Leds','2025-02-24 20:20:35.145202',4);
+INSERT INTO "post" VALUES(6,'image_1740428662.jpg','Cachorro de bode','2025-02-24 20:24:22.335684',3);
+INSERT INTO "post" VALUES(7,'image_1740428981.jpg','Coisa 😻 ','2025-02-24 20:29:41.240816',3);
+INSERT INTO "post" VALUES(8,'IMG_20250213_103855_1740429095.jpg','O pássaros','2025-02-24 20:31:35.515572',2);
+INSERT INTO "post" VALUES(9,'IMG_0383_1740429417.jpg','Flor','2025-02-24 20:36:57.200794',1);
+INSERT INTO "post" VALUES(10,'Menina_adolescente_no_show_do_linkpark_em_2010._Foto_natural__20250224_174458_0000_1740429947.jpg','Saudades das amigas ','2025-02-24 20:45:47.207633',4);
+INSERT INTO "post" VALUES(11,'Um_alienigena_tomando_sorvete__20250224_174832_0000_1740430353.jpg','Onde eu queria estar ','2025-02-24 20:52:33.872946',4);
+CREATE TABLE tag (
+	id INTEGER NOT NULL, 
+	post_id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	created_at DATETIME, 
+	PRIMARY KEY (id), 
+	CONSTRAINT unique_post_user_tag UNIQUE (post_id, user_id), 
+	FOREIGN KEY(post_id) REFERENCES post (id), 
+	FOREIGN KEY(user_id) REFERENCES user (id)
+);
+INSERT INTO "tag" VALUES(1,1,2,'2025-02-24 20:02:51.885670');
+INSERT INTO "tag" VALUES(2,2,1,'2025-02-24 20:15:00.518975');
+CREATE TABLE timeline_preference (
+	id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	sort_by VARCHAR(20), 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	UNIQUE (user_id), 
+	FOREIGN KEY(user_id) REFERENCES user (id)
+);
+INSERT INTO "timeline_preference" VALUES(1,4,'recent','2025-02-24 20:36:17','2025-02-24 20:56:10');
+CREATE TABLE user (
+	id INTEGER NOT NULL, 
+	username VARCHAR(80) NOT NULL, 
+	password_hash VARCHAR(120) NOT NULL, 
+	reset_code VARCHAR(8), 
+	reset_code_expiry DATETIME, 
+	is_admin BOOLEAN, 
+	PRIMARY KEY (id), 
+	UNIQUE (username), 
+	UNIQUE (reset_code)
+);
+INSERT INTO "user" VALUES(1,'mark','scrypt:32768:8:1$dJbcPO5YWK427udG$ef8c7c6f5d1603768b11d974b2320b3f4c1ad490c53a8a127a1110e04f10d6c026f286282afbd66c269615fce619ca5760067c68d795f08cdd2c48c36e95bc15',NULL,NULL,1);
+INSERT INTO "user" VALUES(2,'hiure','scrypt:32768:8:1$9otq0KPFpynyXt8g$906999d4bef85d8de4f52ee460266455b6ac7e87428d3e53b4141b9875cac71441f8c20f495753d84543e47d9d3c5bec64b67159942eb1a0389e3257598ae9ce',NULL,NULL,0);
+INSERT INTO "user" VALUES(3,'Luisa','scrypt:32768:8:1$sjZHVX8sTNFMGtu2$71af4c9db8a109ea635bff0df372d0a90ea3b46b28b5c38526065378f743304474a004ee8de8a29bda05fbab40b021bb76bd96300bbe0cd0f0556f2d34e96343',NULL,NULL,0);
+INSERT INTO "user" VALUES(4,'nica','scrypt:32768:8:1$PR4m1WTDhJqKMlST$b5767f145fe9820fc735570e40a419467a5fcbaa9c5cbcec0d5e4cdb47f0501cf55476d92d84d7857a0c37cdaa964aa31ac1f26a0d72c9c2f3f1b3554a5c2173',NULL,NULL,0);
+INSERT INTO "user" VALUES(5,'admin','scrypt:32768:8:1$ekiRgQaUphGieI0F$968bfff9c761f0a3277f581f807394ae804e7a861dacdb9d3a2de46b63078a631d4e6e3d69814e618532a7fc9bc0bb089f7d1e3f92228351c36a55a5402eb7fe',NULL,NULL,1);
+CREATE TABLE visibility (
+	id INTEGER NOT NULL, 
+	post_id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	is_visible BOOLEAN, 
+	created_at DATETIME, 
+	PRIMARY KEY (id), 
+	CONSTRAINT unique_post_user_visibility UNIQUE (post_id, user_id), 
+	FOREIGN KEY(post_id) REFERENCES post (id), 
+	FOREIGN KEY(user_id) REFERENCES user (id)
+);
+INSERT INTO "visibility" VALUES(1,4,2,1,'2025-02-24 20:20:04.373875');
+COMMIT;

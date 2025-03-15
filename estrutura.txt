@@ -1,0 +1,19 @@
+compose/
+├── app/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── post.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   └── posts.py
+│   ├── static/
+│   │   ├── css/
+│   │   └── uploads/
+│   └── templates/
+│       ├── base.html
+│       ├── auth/
+│       └── posts/
+└── run.py 

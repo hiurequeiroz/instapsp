@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Moderação de Comentários{% endblock %}
+
+{% block content %}
+<div class="comments-moderation">
+    <h1>Moderação de Comentários</h1>
+    
+    <div class="comments-list">
+        {% for comment in comments.items %}
+        <div class="comment-card" id="comment-{{ comment.id }}">
+            <div class="comment-header">
+                <div class="comment-info">
+                    <span class="username">{{ comment.author.username }}</span>
+                    <span class="timestamp">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+                <div class="comment-actions">
+                    <button class="edit-comment" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-comment" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="comment-content" id="content-{{ comment.id }}">
+                <p>{{ comment.html_text | safe }}</p>
+            </div>
+            
+            <div class="comment-edit-form" id="edit-form-{{ comment.id }}" style="display: none;">
+                <div class="formatting-toolbar">
+                    <button type="button" class="format-btn" data-format="bold" title="Negrito">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button type="button" class="format-btn" data-format="italic" title="Itálico">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button type="button" class="format-btn" data-format="strikethrough" title="Riscado">
+                        <i class="fas fa-strikethrough"></i>
+                    </button>
+                    <button type="button" class="format-btn" data-format="underline" title="Sublinhado">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                </div>
+                <textarea class="edit-textarea">{{ comment.text }}</textarea>
+                <div class="edit-actions">
+                    <button class="save-edit" data-comment-id="{{ comment.id }}">Salvar</button>
+                    <button class="cancel-edit" data-comment-id="{{ comment.id }}">Cancelar</button>
+                </div>
+            </div>
+            
+            <div class="comment-context">
+                <span class="context-label">Em resposta ao post de:</span>
+                <a href="{{ url_for('posts.index') }}#post-{{ comment.post.id }}" class="post-link">
+                    @{{ comment.post.author.username }}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if comments.pages > 1 %}
+    <div class="pagination">
+        {% for page in comments.iter_pages() %}
+            {% if page %}
+                <a href="{{ url_for('admin.moderate_comments', page=page) }}"
+                   class="page-link {% if page == comments.page %}active{% endif %}">
+                    {{ page }}
+                </a>
+            {% else %}
+                <span class="ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.delete-comment').forEach(button => {
+    button.addEventListener('click', async function() {
+        if (!confirm('Tem certeza que deseja remover este comentário?')) {
+            return;
+        }
+
+        const commentId = this.dataset.commentId;
+        
+        try {
+            const response = await fetch(`/admin/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove o comentário da interface
+                document.getElementById(`comment-${commentId}`).remove();
+            } else {
+                throw new Error(data.error || 'Erro ao remover comentário');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao remover comentário. Tente novamente.');
+        }
+    });
+});
+
+// Funções para edição de comentários
+function wrapText(textarea, openTag, closeTag) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const beforeText = textarea.value.substring(0, start);
+    const afterText = textarea.value.substring(end);
+
+    textarea.value = beforeText + openTag + selectedText + closeTag + afterText;
+    textarea.focus();
+    textarea.selectionStart = start + openTag.length;
+    textarea.selectionEnd = end + openTag.length;
+}
+
+document.querySelectorAll('.edit-comment').forEach(button => {
+    button.addEventListener('click', function() {
+        const commentId = this.dataset.commentId;
+        const contentDiv = document.getElementById(`content-${commentId}`);
+        const editForm = document.getElementById(`edit-form-${commentId}`);
+        
+        // Adiciona os eventos de formatação
+        const textarea = editForm.querySelector('.edit-textarea');
+        editForm.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.dataset.format;
+                let openTag, closeTag;
+                
+                switch(format) {
+                    case 'bold':
+                        openTag = '<strong>';
+                        closeTag = '</strong>';
+                        break;
+                    case 'italic':
+                        openTag = '<em>';
+                        closeTag = '</em>';
+                        break;
+                    case 'strikethrough':
+                        openTag = '<del>';
+                        closeTag = '</del>';
+                        break;
+                    case 'underline':
+                        openTag = '<u>';
+                        closeTag = '</u>';
+                        break;
+                }
+                
+                wrapText(textarea, openTag, closeTag);
+            });
+        });
+        
+        contentDiv.style.display = 'none';
+        editForm.style.display = 'block';
+    });
+});
+
+document.querySelectorAll('.cancel-edit').forEach(button => {
+    button.addEventListener('click', function() {
+        const commentId = this.dataset.commentId;
+        const contentDiv = document.getElementById(`content-${commentId}`);
+        const editForm = document.getElementById(`edit-form-${commentId}`);
+        
+        contentDiv.style.display = 'block';
+        editForm.style.display = 'none';
+    });
+});
+
+document.querySelectorAll('.save-edit').forEach(button => {
+    button.addEventListener('click', async function() {
+        const commentId = this.dataset.commentId;
+        const editForm = document.getElementById(`edit-form-${commentId}`);
+        const contentDiv = document.getElementById(`content-${commentId}`);
+        const textarea = editForm.querySelector('.edit-textarea');
+        const newText = textarea.value.trim();
+        
+        if (!newText) {
+            alert('O comentário não pode estar vazio');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/admin/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: newText })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Atualiza o conteúdo com o HTML renderizado
+                contentDiv.querySelector('p').innerHTML = data.html;
+                contentDiv.style.display = 'block';
+                editForm.style.display = 'none';
+            } else {
+                throw new Error(data.error || 'Erro ao editar comentário');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao editar comentário. Tente novamente.');
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Timeline de {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="timeline-manager">
+    <div class="timeline-header">
+        <h1>Gerenciar Timeline de @{{ user.username }}</h1>
+        <p>Controle quais posts aparecem para este usuário</p>
+    </div>
+    
+    <div class="posts-grid">
+        {% for post, is_visible in posts %}
+        <div class="post-card timeline-card">
+            <div class="post-header">
+                <span class="username">{{ post.author.username }}</span>
+                <span class="timestamp">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+            
+            <div class="post-image">
+                <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post image">
+            </div>
+            
+            <div class="post-actions">
+                <div class="visibility-toggle">
+                    <label class="switch">
+                        <input type="checkbox" 
+                               {% if is_visible != False %}checked{% endif %}
+                               data-user-id="{{ user.id }}"
+                               data-post-id="{{ post.id }}">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="visibility-label">
+                        {% if is_visible != False %}Visível{% else %}Oculto{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.visibility-toggle input').forEach(toggle => {
+    toggle.addEventListener('change', async function() {
+        const userId = this.dataset.userId;
+        const postId = this.dataset.postId;
+        const label = this.closest('.visibility-toggle').querySelector('.visibility-label');
+        
+        try {
+            const response = await fetch(`/admin/timeline/${userId}/toggle/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                label.textContent = data.visible ? 'Visível' : 'Oculto';
+            }
+        } catch (error) {
+            console.error('Erro ao alterar visibilidade:', error);
+            this.checked = !this.checked; // Reverte o toggle em caso de erro
+        }
+    });
+});
+</script>
+{% endblock %} 

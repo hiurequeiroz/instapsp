@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin{% endblock %}
+
+{% block content %}
+<div class="admin-panel">
+    <h1>Painel de Administração</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Usuários</h3>
+            <p class="stat-number">{{ total_users }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Posts</h3>
+            <p class="stat-number">{{ total_posts }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Comentários</h3>
+            <p class="stat-number">{{ total_comments }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Curtidas</h3>
+            <p class="stat-number">{{ total_likes }}</p>
+        </div>
+    </div>
+
+    <div class="admin-links">
+        <a href="{{ url_for('admin.posts') }}" class="admin-link">
+            <i class="fas fa-images"></i>
+            Gerenciar Posts
+        </a>
+        <a href="{{ url_for('admin.users') }}" class="admin-link">
+            <i class="fas fa-users"></i>
+            Gerenciar Usuários
+        </a>
+        <a href="{{ url_for('admin.moderate_comments') }}" class="admin-link">
+            <i class="fas fa-comments"></i>
+            Moderar Comentários
+        </a>
+    </div>
+</div>
+{% endblock %} 

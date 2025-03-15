@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Post Compartilhado{% endblock %}
+
+{% block content %}
+<div class="shared-post-container">
+    <div class="post-card">
+        <div class="post-header">
+            <span class="username">{{ post.author.username }}</span>
+            <span class="timestamp">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        
+        <div class="post-image">
+            <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post image">
+        </div>
+        
+        {% if post.caption %}
+        <div class="post-caption">
+            <p><strong>{{ post.author.username }}</strong> {{ post.caption }}</p>
+        </div>
+        {% endif %}
+
+        <div class="post-stats">
+            <div class="stat">
+                <i class="fas fa-heart"></i>
+                <span>{{ post.like_count() }}</span>
+            </div>
+            <div class="stat">
+                <i class="fas fa-comment"></i>
+                <span>{{ post.comments|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if not current_user.is_authenticated %}
+    <div class="join-prompt">
+        <p>Gostou? Junte-se a nós!</p>
+        <a href="{{ url_for('auth.register') }}" class="btn">Criar uma conta</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Posts{% endblock %}
+
+{% block content %}
+<div class="admin-posts">
+    <h1>Gerenciar Posts</h1>
+    
+    <div class="sort-options">
+        <a href="{{ url_for('admin.posts', sort='recent') }}" 
+           class="sort-option {% if sort_by == 'recent' %}active{% endif %}">
+            Mais Recentes
+        </a>
+        <a href="{{ url_for('admin.posts', sort='likes') }}"
+           class="sort-option {% if sort_by == 'likes' %}active{% endif %}">
+            Mais Curtidos
+        </a>
+        <a href="{{ url_for('admin.posts', sort='comments') }}"
+           class="sort-option {% if sort_by == 'comments' %}active{% endif %}">
+            Mais Comentados
+        </a>
+    </div>
+
+    <div class="posts-grid">
+        {% for post in posts %}
+        <div class="post-card admin-view" id="post-{{ post.id }}" class="{{ 'hidden' if post.is_hidden }}">
+            <div class="post-header">
+                <span class="username">{{ post.author.username }}</span>
+                <span class="timestamp">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+            
+            <div class="post-image">
+                <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post image">
+            </div>
+            
+            <div class="post-stats">
+                <div class="stat">
+                    <i class="fas fa-heart"></i>
+                    <span>{{ post.like_count() }}</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-comment"></i>
+                    <span>{{ post.comments|length }}</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-user-tag"></i>
+                    <span>{{ post.tagged_users|length }}</span>
+                </div>
+            </div>
+
+            {% if post.tagged_users %}
+            <div class="tagged-users">
+                <span class="tag-label">Usuários marcados:</span>
+                {% for user in post.tagged_users %}
+                    <span class="user-tag">@{{ user.username }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="post-actions">
+                <button class="toggle-visibility-btn" data-post-id="{{ post.id }}"
+                        title="{{ 'Mostrar post' if post.is_hidden else 'Ocultar post' }}">
+                    <i class="fas {{ 'fa-eye-slash' if post.is_hidden else 'fa-eye' }}"></i>
+                    <span class="visibility-status">{{ 'Oculto' if post.is_hidden else 'Visível' }}</span>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% for page in pagination.iter_pages() %}
+            {% if page %}
+                <a href="{{ url_for('admin.posts', sort=sort_by, page=page) }}"
+                   class="page-link {% if page == pagination.page %}active{% endif %}">
+                    {{ page }}
+                </a>
+            {% else %}
+                <span class="ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.toggle-visibility-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+        const postId = this.dataset.postId;
+        const icon = this.querySelector('i');
+        const status = this.querySelector('.visibility-status');
+        
+        try {
+            const response = await fetch(`/admin/posts/${postId}/toggle-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Atualiza o ícone e o texto
+                icon.className = data.is_hidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+                status.textContent = data.is_hidden ? 'Oculto' : 'Visível';
+                this.title = data.is_hidden ? 'Mostrar post' : 'Ocultar post';
+            } else {
+                throw new Error(data.error || 'Erro ao alterar visibilidade');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao alterar visibilidade do post. Tente novamente.');
+        }
+    });
+});
+</script>
+{% endblock %} 
