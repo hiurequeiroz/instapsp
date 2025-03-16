@@ -2,68 +2,85 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
+import time
 from ..extensions import db
 from ..models.post import Post
 from ..models.comment import Comment
 from ..utils.image_handler import process_image
-import time
 from ..models.like import Like
 from ..models.user import User
 from ..models.tag import Tag
 from ..models.visibility import Visibility
 from ..models.timeline_preference import TimelinePreference
 from sqlalchemy import func
+from datetime import datetime
+import pytz  # Adicione esta importação no topo do arquivo
 
 bp = Blueprint('posts', __name__)
 
+# Configurações de upload
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def get_upload_folders():
+    """Retorna os caminhos das pastas de upload"""
+    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+    pdf_folder = os.path.join(upload_folder, 'pdfs')
+    image_folder = os.path.join(upload_folder, 'images')
+    return upload_folder, pdf_folder, image_folder
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Função auxiliar para converter UTC para horário de Brasília
+def utc_to_local(utc_dt):
+    local_tz = pytz.timezone('America/Sao_Paulo')
+    local_dt = utc_dt.replace(tzinfo=pytz.UTC).astimezone(local_tz)
+    return local_dt
+
 @bp.route('/')
 @login_required
 def index():
     """Página inicial com feed de fotos"""
-    preference = TimelinePreference.query.filter_by(user_id=current_user.id).first()
-    sort_by = preference.sort_by if preference else 'recent'
+    UPLOAD_FOLDER, PDF_FOLDER, IMAGE_FOLDER = get_upload_folders()
+    posts = []
     
-    # Query base
-    query = Post.query\
-        .outerjoin(Visibility, 
-                  (Visibility.post_id == Post.id) & 
-                  (Visibility.user_id == current_user.id))\
-        .filter((Visibility.is_visible == True) | 
-                (Visibility.id == None))
+    # Lista PDFs
+    for filename in os.listdir(PDF_FOLDER):
+        if filename.endswith('.pdf'):
+            file_path = os.path.join(PDF_FOLDER, filename)
+            title = filename.split('_', 2)[-1].replace('.pdf', '')
+            file_timestamp = os.path.getmtime(file_path)
+            # Converte timestamp para datetime local
+            local_time = utc_to_local(datetime.fromtimestamp(file_timestamp))
+            posts.append({
+                'type': 'pdf',
+                'title': title,
+                'url': url_for('static', filename=f'uploads/pdfs/{filename}'),
+                'date': local_time.strftime('%d/%m/%Y %H:%M'),
+                'timestamp': file_timestamp,
+                'description': 'Artigo PDF compartilhado',
+                'author': current_user
+            })
     
-    if sort_by == 'likes':
-        # Ordenar por número de curtidas
-        query = query.outerjoin(Like)\
-            .group_by(Post.id)\
-            .order_by(func.count(Like.id).desc(), Post.created_at.desc())
-    elif sort_by == 'comments':
-        # Ordenar por número de comentários
-        query = query.outerjoin(Comment)\
-            .group_by(Post.id)\
-            .order_by(func.count(Comment.id).desc(), Post.created_at.desc())
-    elif sort_by == 'admin_first':
-        # Posts de administradores primeiro
-        query = query.join(User, Post.user_id == User.id)\
-            .order_by(User.is_admin.desc(), Post.created_at.desc())
-    else:  # recent
-        query = query.order_by(Post.created_at.desc())
+    # Busca posts de imagem do banco de dados
+    image_posts = Post.query.order_by(Post.created_at.desc()).all()
     
-    # Adicionar logs para debug
-    print(f"Preferência do usuário: {sort_by}")
-    print(f"SQL Query: {query}")
+    # Combina PDFs e posts de imagem
+    for post in image_posts:
+        # Converte o created_at para horário local
+        post.local_time = utc_to_local(post.created_at)
+        posts.append(post)
     
-    page = request.args.get('page', 1, type=int)
+    # Função auxiliar para obter a data de ordenação
+    def get_sort_date(item):
+        if hasattr(item, 'created_at'):
+            return item.created_at.timestamp()
+        else:
+            return item['timestamp']
     
-    posts = query.paginate(page=page, per_page=10)
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render_template('posts/_posts_list.html', posts=posts)
+    # Ordena por data
+    posts.sort(key=get_sort_date, reverse=True)
     
     return render_template('posts/index.html', posts=posts)
 
@@ -73,55 +90,55 @@ def upload():
     if request.method == 'GET':
         return render_template('posts/upload.html')
     
+    UPLOAD_FOLDER, PDF_FOLDER, IMAGE_FOLDER = get_upload_folders()
+    
     try:
         if 'file' not in request.files:
-            return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+            flash('Nenhum arquivo selecionado', 'error')
+            return redirect(url_for('posts.upload'))
             
         file = request.files['file']
         if file.filename == '':
-            return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+            flash('Nenhum arquivo selecionado', 'error')
+            return redirect(url_for('posts.upload'))
             
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
+            flash('Tipo de arquivo não permitido', 'error')
+            return redirect(url_for('posts.upload'))
             
-        # Processa a imagem com o filtro selecionado
+        # Processa upload de imagem
         filter_name = request.form.get('filter', 'normal')
         processed_image = process_image(file, filter_name)
-            
-        # Cria o diretório de uploads se não existir
-        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-        os.makedirs(upload_folder, exist_ok=True)
         
-        # Gera um nome único para o arquivo
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
-        filename = f"{base}_{int(time.time())}.jpg"  # Sempre salva como JPG após processamento
-        filepath = os.path.join(upload_folder, filename)
+        filename = f"{base}_{int(time.time())}.jpg"
+        filepath = os.path.join(IMAGE_FOLDER, filename)
         
-        # Salva o arquivo processado
         with open(filepath, 'wb') as f:
             f.write(processed_image.getvalue())
         
-        # Cria o post no banco de dados
+        # Cria o post com o horário local
+        local_tz = pytz.timezone('America/Sao_Paulo')
+        local_time = datetime.now(local_tz)
+        
         post = Post(
-            image_path=filename,  # Salvamos apenas o nome do arquivo
+            image_path=f'uploads/images/{filename}',
             caption=request.form.get('caption', ''),
-            user_id=current_user.id
+            user_id=current_user.id,
+            created_at=local_time
         )
         db.session.add(post)
         db.session.commit()
         
-        return jsonify({
-            'success': True,
-            'message': 'Imagem enviada com sucesso!'
-        })
+        flash('Imagem enviada com sucesso!', 'success')
+        return redirect(url_for('posts.index'))
         
     except Exception as e:
         print(f"Erro no upload: {str(e)}")
         db.session.rollback()
-        return jsonify({
-            'error': f'Erro ao fazer upload: {str(e)}'
-        }), 500
+        flash(f'Erro ao fazer upload: {str(e)}', 'error')
+        return redirect(url_for('posts.upload'))
 
 @bp.route('/post/<int:post_id>/comment', methods=['POST'])
 @login_required
@@ -226,4 +243,61 @@ def search_users():
 @login_required
 def notifications():
     """Página de notificações"""
-    return render_template('posts/notifications.html') 
+    return render_template('posts/notifications.html')
+
+@bp.route('/pdfs')
+@login_required
+def list_pdfs():
+    """Lista todos os PDFs compartilhados"""
+    pdfs = []
+    pdf_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'pdfs')
+    
+    for filename in os.listdir(pdf_folder):
+        if filename.endswith('.pdf'):
+            file_path = os.path.join(pdf_folder, filename)
+            title = filename.split('_', 2)[-1].replace('.pdf', '')
+            pdfs.append({
+                'title': title,
+                'url': url_for('static', filename=f'uploads/pdfs/{filename}'),
+                'date': time.ctime(os.path.getmtime(file_path)),
+                'size': os.path.getsize(file_path) / (1024 * 1024)  # Tamanho em MB
+            })
+    
+    # Ordena por data, mais recente primeiro
+    pdfs.sort(key=lambda x: os.path.getmtime(
+        os.path.join(pdf_folder, x['url'].split('/')[-1])), 
+        reverse=True)
+    
+    return render_template('posts/pdfs.html', pdfs=pdfs)
+
+@bp.route('/upload_pdf', methods=['POST'])
+@login_required
+def upload_pdf():
+    """Rota específica para upload de PDFs"""
+    if 'file' not in request.files:
+        flash('Nenhum arquivo selecionado', 'error')
+        return redirect(url_for('posts.upload'))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado', 'error')
+        return redirect(url_for('posts.upload'))
+        
+    if not file.filename.lower().endswith('.pdf'):
+        flash('Apenas arquivos PDF são permitidos', 'error')
+        return redirect(url_for('posts.upload'))
+    
+    try:
+        filename = secure_filename(file.filename)
+        unique_filename = f"pdf_{int(time.time())}_{filename}"
+        file_path = os.path.join(get_upload_folders()[1], unique_filename)  # PDF_FOLDER
+        
+        file.save(file_path)
+        
+        flash('PDF enviado com sucesso!', 'success')
+        return redirect(url_for('posts.list_pdfs'))
+        
+    except Exception as e:
+        print(f"Erro no upload do PDF: {str(e)}")
+        flash(f'Erro ao fazer upload do PDF: {str(e)}', 'error')
+        return redirect(url_for('posts.upload')) 
