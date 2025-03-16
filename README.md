@@ -15,6 +15,10 @@ Este projeto foi criado como uma ferramenta de ensino para demonstrar conceitos 
 - Painel administrativo
 - Timeline personalizada
 - Sistema de notificações
+- Upload e visualização de PDFs
+- Preview de imagens antes do upload
+- Interface melhorada com Font Awesome
+- Gerenciamento avançado de mídia (imagens e PDFs)
 
 ## 🛠️ Tecnologias
 
@@ -23,6 +27,8 @@ Este projeto foi criado como uma ferramenta de ensino para demonstrar conceitos 
 - SQLite
 - HTML/CSS/JavaScript
 - Pillow (para processamento de imagens)
+- Font Awesome
+- PDF.js para visualização de PDFs
 
 ## ⚙️ Instalação
 
@@ -123,6 +129,11 @@ flask init-db
 flask list-users
 ```
 
+- Limpar cache de uploads:
+```bash
+flask clean-uploads
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -130,20 +141,31 @@ compose/
 ├── app/
 │   ├── models/      # Modelos do banco de dados
 │   ├── routes/      # Rotas e views
-│   ├── static/      # Arquivos estáticos (CSS, JS, imagens)
-│   ├── templates/   # Templates HTML
-│   └── utils/       # Utilitários
-├── instance/        # Banco de dados (não versionado)
-├── uploads/         # Arquivos de upload (não versionado)
-├── backups/         # Backups do banco (não versionado)
-└── migrations/      # Migrações do banco
+│   ├── static/      
+│   │   ├── css/     # Estilos e Font Awesome
+│   │   ├── js/      # Scripts de preview e PDF
+│   │   ├── uploads/ # Arquivos enviados
+│   │   └── webfonts/# Fontes do Font Awesome
+│   └── templates/   
+│       └── posts/   # Templates de posts e PDFs
+├── instance/        
+└── migrations/      
 ```
+
+## 🔧 Arquivos JavaScript
+
+O projeto agora inclui novos scripts para melhor experiência do usuário:
+- `preview.js`: Preview de imagens antes do upload
+- `pdf.js`: Visualização e manipulação de PDFs
+- `post.js`: Funcionalidades específicas dos posts
 
 ## ⚠️ Observações Importantes
 
 - Os diretórios `instance/`, `uploads/` e `backups/` não são versionados no git
 - Nunca compartilhe seu arquivo `.env` ou backups do banco de dados
 - Mantenha suas chaves secretas e senhas seguras
+- O visualizador de PDF pode ter limitações em dispositivos móveis
+- Certifique-se de que o diretório de uploads tenha as permissões corretas
 
 ## 🐛 Problemas Conhecidos
 
