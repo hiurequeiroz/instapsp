@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from markdown import markdown
 from pathlib import Path
 from dotenv import load_dotenv
+from app.config import Config
 
 # Importe todos os modelos aqui para o Alembic detectá-los
 from .models.user import User
@@ -18,16 +19,17 @@ from .models.timeline_preference import TimelinePreference
 
 load_dotenv()
 
-def create_app(test_config=None):
+def create_app(config_class=Config):
     """
     Função factory para criar a aplicação Flask
     Permite múltiplas instâncias da aplicação e facilita os testes
     """
-    app = Flask(__name__)
+    app = Flask(__name__,
+        static_folder='static',
+        template_folder='templates'
+    )
     
-    # Carrega a configuração do config.py na raiz do projeto
-    from config import Config
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
     Config.init_app(app)
     
     # Garantir que as pastas necessárias existam
