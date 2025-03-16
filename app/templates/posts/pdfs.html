@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}PDFs Compartilhados{% endblock %}
+
+{% block content %}
+<div class="pdfs-container">
+    <h1>PDFs Compartilhados</h1>
+    
+    <div class="pdf-list">
+        {% for pdf in pdfs %}
+        <div class="pdf-item">
+            <div class="pdf-icon">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="pdf-info">
+                <h3>{{ pdf.title }}</h3>
+                <p class="pdf-meta">
+                    Compartilhado em {{ pdf.date }} | 
+                    Tamanho: {{ "%.2f"|format(pdf.size) }} MB
+                </p>
+                <a href="{{ pdf.url }}" class="download-button" download>
+                    <i class="fas fa-download"></i> Baixar PDF
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
