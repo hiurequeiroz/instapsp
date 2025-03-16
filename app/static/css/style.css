@@ -167,22 +167,21 @@ button:hover {
 
 /* Preview de imagem */
 .preview-container {
-    margin: 10px 0;
-    max-width: 300px;
-    min-height: 200px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
+    height: 250px;
+    margin: 20px 0;
     background: #f8f9fa;
-    border: 1px solid #dbdbdb;
-    border-radius: 4px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ddd;
 }
 
 .preview-container img {
     max-width: 100%;
-    max-height: 300px;
-    height: auto;
-    border-radius: 4px;
+    max-height: 100%;
     object-fit: contain;
 }
 
@@ -295,18 +294,18 @@ button:hover {
 .filters-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .filter-option {
     cursor: pointer;
     text-align: center;
-    padding: 8px;
+    padding: 6px;
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.2s;
-    background: #f8f8f8;
+    background: #f8f9fa;
 }
 
 .filter-option:hover {
@@ -323,16 +322,31 @@ button:hover {
     width: 100%;
     height: 60px;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    margin-bottom: 5px;
 }
 
-.filter-option span {
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
     display: block;
-    font-size: 12px;
-    color: #262626;
-    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
 }
 
 /* Efeitos CSS para preview dos filtros */
@@ -1515,6 +1529,14 @@ input:checked + .slider:before {
     text-decoration: underline;
 }
 
+.comment-content p del {
+    text-decoration: line-through;
+}
+
+.comment-content p u {
+    text-decoration: underline;
+}
+
 .comment-context {
     font-size: 12px;
     color: #8e8e8e;
@@ -1725,4 +1747,642 @@ input:checked + .slider:before {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Estilo das abas */
+.post-tabs {
+    margin: 20px 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    background: #f5f5f5;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-button:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.tab-button.active {
+    background: #fff;
+    color: #007bff;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #007bff;
+}
+
+/* Adiciona ícones às abas */
+.tab-button[data-tab="photo"]::before {
+    content: '📷';
+    margin-right: 8px;
+}
+
+.tab-button[data-tab="pdf"]::before {
+    content: '📄';
+    margin-right: 8px;
+}
+
+/* Conteúdo das abas */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Formulário de PDF */
+#pdf-content .file-input {
+    margin-bottom: 30px;
+}
+
+#pdf-content .upload-button {
+    margin-top: 20px;
+}
+
+/* Estilos para o container de upload */
+.upload-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Campos de entrada */
+.file-input {
+    margin-bottom: 20px;
+}
+
+.file-input input[type="file"] {
+    display: none;
+}
+
+.file-input label {
+    display: block;
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.file-input label:hover {
+    background: #0056b3;
+}
+
+/* Campo de legenda */
+.caption-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 20px 0;
+    min-height: 60px;
+    max-height: 120px;
+    resize: vertical;
+}
+
+/* Opções de filtro */
+.filter-options {
+    margin-bottom: 20px;
+}
+
+.filter-options select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+}
+
+/* Botão de upload */
+.upload-button {
+    width: 100%;
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.upload-button:hover {
+    background: #0056b3;
+}
+
+/* Adicione estes estilos ao seu arquivo CSS */
+.shared-files {
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.file-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.pdf-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.pdf-preview i.fa-file-pdf {
+    font-size: 48px;
+    color: #dc3545;
+    margin-bottom: 10px;
+}
+
+.pdf-preview h3 {
+    margin: 10px 0;
+    color: #333;
+}
+
+.download-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.download-link i {
+    margin-right: 8px;
+}
+
+.download-link:hover {
+    background: #0056b3;
+}
+
+/* Estilos para posts de PDF no feed */
+.pdf-post {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.pdf-icon {
+    margin-right: 20px;
+}
+
+.pdf-icon i {
+    font-size: 48px;
+    color: #dc3545;
+}
+
+.pdf-info {
+    flex: 1;
+}
+
+.pdf-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.pdf-description {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.post-date {
+    color: #999;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.download-button i {
+    margin-right: 8px;
+}
+
+.download-button:hover {
+    background: #0056b3;
+    text-decoration: none;
+    color: white;
+}
+
+/* Estilos para a página de PDFs */
+.pdfs-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pdfs-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.pdf-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pdf-item {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.pdf-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.pdf-icon {
+    margin-right: 20px;
+}
+
+.pdf-icon i {
+    font-size: 40px;
+    color: #dc3545;
+}
+
+.pdf-info {
+    flex: 1;
+}
+
+.pdf-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.pdf-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: background 0.2s;
+}
+
+.download-button i {
+    margin-right: 8px;
+}
+
+.download-button:hover {
+    background: #0056b3;
+    text-decoration: none;
+    color: white;
+}
+
+/* Ajustes para o ícone de PDF no menu */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-link .fa-file-pdf {
+    font-size: 20px;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Adicione estes estilos */
+.upload-placeholder {
+    text-align: center;
+    color: #666;
+}
+
+.upload-placeholder i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #999;
+}
+
+.upload-placeholder p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.filters-container {
+    display: none; /* Inicialmente oculto */
+}
+
+.filter-option {
+    cursor: pointer;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: #f8f8f8;
+}
+
+.filter-option:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+.filter-option.selected {
+    border-color: #0095f6;
+    background: #f0f9ff;
+}
+
+.filter-preview {
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-option span {
+    display: block;
+    font-size: 12px;
+    color: #262626;
+    font-weight: 500;
+}
+
+/* Área de seleção de foto */
+.photo-select {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.photo-input {
+    display: none;
+}
+
+.select-photo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: #0095f6;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.select-photo-btn:hover {
+    background: #0081d6;
+}
+
+.select-photo-btn i {
+    font-size: 20px;
+}
+
+/* Preview vazio */
+.empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: #f0f0f0;
+    color: #999;
+}
+
+.empty-preview i {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.empty-preview p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Preview container */
+.preview-container {
+    width: 100%;
+    height: 250px; /* Reduzido de 300px */
+    margin: 20px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ddd;
+}
+
+/* Campo de legenda */
+.caption-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 20px 0;
+    min-height: 60px; /* Reduzido de 100px */
+    max-height: 120px;
+    resize: vertical;
+}
+
+/* Filtros */
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Reduzido de 100px */
+    gap: 10px; /* Reduzido de 15px */
+    margin-top: 10px;
+}
+
+.filter-option {
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: #f8f9fa;
+}
+
+.filter-preview {
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.filter-option span {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: #262626;
+    margin-top: 5px;
+}
+
+/* Estilos para a aba de PDF */
+.pdf-upload-area {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.file-select {
+    text-align: center;
+    padding: 30px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+}
+
+.pdf-input {
+    display: none;
+}
+
+.select-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: #dc3545;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.select-pdf-btn:hover {
+    background: #c82333;
+}
+
+.select-pdf-btn i {
+    font-size: 24px;
+}
+
+.pdf-info {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.upload-button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background: #0095f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.upload-button:hover {
+    background: #0081d6;
+}
+
+.upload-button i {
+    font-size: 18px;
 } 
