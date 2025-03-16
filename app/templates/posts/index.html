@@ -11,57 +11,79 @@
     <div id="posts-list">
         {% for post in posts %}
         <div class="post-card">
-            <div class="post-header">
-                <span class="username">{{ post.author.username }}</span>
-                <span class="timestamp">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-            </div>
-            
-            <div class="post-image">
-                <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post image">
-            </div>
-            
-            <div class="post-actions">
-                <div class="action-group">
-                    <button class="like-button {% if post.is_liked_by(current_user) %}liked{% endif %}" 
-                            data-post-id="{{ post.id }}">
-                        <i class="fa-heart {% if post.is_liked_by(current_user) %}fas{% else %}far{% endif %}"></i>
-                    </button>
-                    <span class="like-count">{{ post.like_count() }}</span>
+            {% if post is mapping and post.type == 'pdf' %}  {# Verifica se é um dicionário de PDF #}
+                <!-- Card para PDF -->
+                <div class="post-header">
+                    <span class="username">{{ post.author.username }}</span>
+                    <span class="timestamp">{{ post.date }}</span>
                 </div>
+                
+                <div class="pdf-post">
+                    <div class="pdf-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="pdf-info">
+                        <h3>{{ post.title }}</h3>
+                        <p class="pdf-description">{{ post.description }}</p>
+                        <a href="{{ post.url }}" class="download-button" download>
+                            <i class="fas fa-download"></i> Baixar PDF
+                        </a>
+                    </div>
+                </div>
+            {% else %}  {# É um objeto Post #}
+                <!-- Card para Imagem -->
+                <div class="post-header">
+                    <span class="username">{{ post.author.username }}</span>
+                    <span class="timestamp">{{ post.local_time.strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+                
+                <div class="post-image">
+                    <img src="{{ url_for('static', filename=post.image_path) }}" alt="Post image">
+                </div>
+                
+                <div class="post-actions">
+                    <div class="action-group">
+                        <button class="like-button {% if post.is_liked_by(current_user) %}liked{% endif %}" 
+                                data-post-id="{{ post.id }}">
+                            <i class="fa-heart {% if post.is_liked_by(current_user) %}fas{% else %}far{% endif %}"></i>
+                        </button>
+                        <span class="like-count">{{ post.like_count() }}</span>
+                    </div>
 
-                {% if post.tagged_users %}
-                <div class="tagged-users-list">
-                    <i class="fas fa-user-tag"></i>
-                    {% for user in post.tagged_users %}
-                        <span class="tagged-user">@{{ user.username }}</span>
-                        {%- if not loop.last -%}, {% endif %}
-                    {% endfor %}
+                    {% if post.tagged_users %}
+                    <div class="tagged-users-list">
+                        <i class="fas fa-user-tag"></i>
+                        {% for user in post.tagged_users %}
+                            <span class="tagged-user">@{{ user.username }}</span>
+                            {%- if not loop.last -%}, {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if post.caption %}
+                <div class="post-caption">
+                    <p><strong>{{ post.author.username }}</strong> {{ post.caption }}</p>
                 </div>
                 {% endif %}
-            </div>
-            
-            {% if post.caption %}
-            <div class="post-caption">
-                <p><strong>{{ post.author.username }}</strong> {{ post.caption }}</p>
-            </div>
-            {% endif %}
 
-            <div class="post-comments">
-                {% for comment in post.comments %}
-                <div class="comment">
-                    <span class="comment-author">{{ comment.author.username }}</span>
-                    <span class="comment-text">{{ comment.text | markdown | safe }}</span>
-                    <span class="comment-time">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                <div class="post-comments">
+                    {% for comment in post.comments %}
+                    <div class="comment">
+                        <span class="comment-author">{{ comment.author.username }}</span>
+                        <span class="comment-text">{{ comment.text | markdown | safe }}</span>
+                        <span class="comment-time">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <form class="comment-form" action="{{ url_for('posts.add_comment', post_id=post.id) }}" method="POST">
+                        <input type="text" name="text" placeholder="Adicione um comentário..." required>
+                        <button type="submit" class="comment-submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
                 </div>
-                {% endfor %}
-                
-                <form class="comment-form" action="{{ url_for('posts.add_comment', post_id=post.id) }}" method="POST">
-                    <input type="text" name="text" placeholder="Adicione um comentário..." required>
-                    <button type="submit" class="comment-submit">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </form>
-            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

@@ -1,228 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}Postar{% endblock %}
+{% block title %}Upload{% endblock %}
 
 {% block content %}
-<div class="upload-form">
-    <h2>Postar</h2>
-    <form id="uploadForm" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="photo" class="file-input-label">
+<div class="upload-container">
+    <div class="tabs">
+        <button class="tab-button active" data-tab="photo">Foto</button>
+        <button class="tab-button" data-tab="pdf">PDF</button>
+    </div>
+    
+    <div class="tab-content active" id="photo-content">
+        <!-- Área de seleção de foto -->
+        <div class="photo-select">
+            <input type="file" id="photoInput" accept="image/*" class="photo-input">
+            <label for="photoInput" class="select-photo-btn">
                 <i class="fas fa-camera"></i>
-                Selecionar Imagem
+                <span>Selecionar foto</span>
             </label>
-            <input type="file" id="photo" name="file" accept="image/*" required class="file-input">
-            <div class="preview-container">
-                <img id="imagePreview" src="" alt="Preview" style="display: none;">
-            </div>
         </div>
 
-        <div class="filters-container">
-            <label>Filtros:</label>
+        <!-- Preview da foto -->
+        <div class="preview-container">
+            <div class="empty-preview">
+                <i class="fas fa-image"></i>
+                <p>Nenhuma foto selecionada</p>
+            </div>
+            <img id="imagePreview" src="" style="display: none;">
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3>Escolha um filtro</h3>
             <div class="filters-grid">
-                <div class="filter-option" data-filter="normal">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Normal" class="filter-preview">
+                <div class="filter-option selected" data-filter="normal">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview">
                     <span>Normal</span>
                 </div>
                 <div class="filter-option" data-filter="grayscale">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="P&B" class="filter-preview">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: grayscale(100%)">
                     <span>P&B</span>
                 </div>
                 <div class="filter-option" data-filter="sepia">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Sépia" class="filter-preview">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: sepia(100%)">
                     <span>Sépia</span>
                 </div>
-                <div class="filter-option" data-filter="warm">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Quente" class="filter-preview">
-                    <span>Quente</span>
-                </div>
-                <div class="filter-option" data-filter="cool">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Frio" class="filter-preview">
-                    <span>Frio</span>
-                </div>
-                <div class="filter-option" data-filter="bright">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Brilho" class="filter-preview">
-                    <span>Brilho</span>
-                </div>
                 <div class="filter-option" data-filter="contrast">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Contraste" class="filter-preview">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: contrast(150%)">
                     <span>Contraste</span>
                 </div>
+                <div class="filter-option" data-filter="brightness">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: brightness(130%)">
+                    <span>Brilho</span>
+                </div>
                 <div class="filter-option" data-filter="blur">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Desfoque" class="filter-preview">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: blur(2px)">
                     <span>Desfoque</span>
                 </div>
-                <div class="filter-option" data-filter="sharpen">
-                    <img src="{{ url_for('static', filename='images/filter-thumb.png') }}" alt="Nitidez" class="filter-preview">
-                    <span>Nitidez</span>
+                <div class="filter-option" data-filter="saturate">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: saturate(200%)">
+                    <span>Saturação</span>
+                </div>
+                <div class="filter-option" data-filter="hue-rotate">
+                    <img src="{{ url_for('static', filename='images/psp.png') }}" class="filter-preview" style="filter: hue-rotate(90deg)">
+                    <span>Matiz</span>
                 </div>
             </div>
-            <input type="hidden" name="filter" id="selectedFilter" value="normal">
         </div>
 
-        <div class="form-group">
-            <label for="caption">Legenda:</label>
-            <textarea id="caption" name="caption" rows="3"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="tagUsers">Marcar usuários:</label>
-            <div class="tag-input-container">
-                <input type="text" id="tagInput" placeholder="Digite um nome de usuário...">
-                <div id="userSuggestions" class="suggestions-container"></div>
-            </div>
-            <div id="taggedUsers" class="tagged-users-container"></div>
-            <input type="hidden" name="tagged_users" id="taggedUsersInput">
-        </div>
-        <button type="submit">Postar</button>
-    </form>
+        <!-- Formulário de upload -->
+        <form id="uploadForm">
+            <input type="hidden" id="selectedFilter" name="filter" value="normal">
+            <textarea name="caption" placeholder="Adicione uma legenda..." class="caption-input"></textarea>
+            <button type="submit" class="upload-button">Postar</button>
+        </form>
+    </div>
     
-    <div id="loading" class="loading-container" style="display: none;">
-        <div class="loading-spinner"></div>
-        <p>Processando imagem...</p>
+    <div class="tab-content" id="pdf-content" style="display: none;">
+        <div class="pdf-upload-area">
+            <form action="{{ url_for('posts.upload_pdf') }}" method="post" enctype="multipart/form-data">
+                <!-- Área de seleção do PDF -->
+                <div class="file-select">
+                    <input type="file" id="pdfInput" name="file" accept=".pdf" class="pdf-input" required>
+                    <label for="pdfInput" class="select-pdf-btn">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Selecionar PDF</span>
+                    </label>
+                </div>
+                
+                <!-- Informações do PDF -->
+                <div class="pdf-info">
+                    <div class="form-group">
+                        <label for="title">Título do documento</label>
+                        <input type="text" id="title" name="title" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Descrição</label>
+                        <textarea id="description" name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="upload-button">
+                    <i class="fas fa-upload"></i>
+                    Enviar PDF
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
-<script>
-document.getElementById('photo').addEventListener('change', function(e) {
-    const preview = document.getElementById('imagePreview');
-    const filterPreviews = document.querySelectorAll('.filter-preview');
-    const defaultImage = "{{ url_for('static', filename='images/psp.png') }}";
-    
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-            
-            // Atualiza os previews dos filtros
-            filterPreviews.forEach(img => {
-                img.src = e.target.result;
-            });
-        };
-        
-        reader.readAsDataURL(this.files[0]);
-    } else {
-        preview.style.display = 'none';
-        // Mantém a imagem psp.png apenas nas miniaturas dos filtros
-        filterPreviews.forEach(img => {
-            img.src = defaultImage;
-        });
-    }
-});
-
-// Seleciona filtro
-document.querySelectorAll('.filter-option').forEach(option => {
-    option.addEventListener('click', function() {
-        document.querySelectorAll('.filter-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        this.classList.add('selected');
-        document.getElementById('selectedFilter').value = this.dataset.filter;
-    });
-});
-
-// Sistema de marcação de usuários
-const tagInput = document.getElementById('tagInput');
-const suggestionsContainer = document.getElementById('userSuggestions');
-const taggedUsersContainer = document.getElementById('taggedUsers');
-const taggedUsersInput = document.getElementById('taggedUsersInput');
-const taggedUsers = new Set();
-
-let debounceTimeout;
-
-tagInput.addEventListener('input', function() {
-    clearTimeout(debounceTimeout);
-    const query = this.value.trim();
-    
-    if (query.length === 0) {
-        suggestionsContainer.innerHTML = '';
-        return;
-    }
-
-    // Debounce para evitar muitas requisições
-    debounceTimeout = setTimeout(async () => {
-        try {
-            const response = await fetch(`/users/search?q=${query}`);
-            const data = await response.json();
-            
-            suggestionsContainer.innerHTML = data.users
-                .map(user => `
-                    <div class="user-suggestion" data-username="${user.username}">
-                        <span class="suggestion-username">@${user.username}</span>
-                    </div>
-                `).join('');
-        } catch (error) {
-            console.error('Erro ao buscar usuários:', error);
-        }
-    }, 300); // 300ms de delay
-});
-
-suggestionsContainer.addEventListener('click', function(e) {
-    const suggestion = e.target.closest('.user-suggestion');
-    if (suggestion) {
-        const username = suggestion.dataset.username;
-        if (!taggedUsers.has(username)) {
-            taggedUsers.add(username);
-            updateTaggedUsersDisplay();
-        }
-        tagInput.value = '';
-        suggestionsContainer.innerHTML = '';
-    }
-});
-
-function updateTaggedUsersDisplay() {
-    taggedUsersContainer.innerHTML = Array.from(taggedUsers)
-        .map(username => `
-            <div class="tagged-user">
-                <span>@${username}</span>
-                <button type="button" class="remove-tag" data-username="${username}">&times;</button>
-            </div>
-        `).join('');
-    taggedUsersInput.value = Array.from(taggedUsers).join(',');
-}
-
-taggedUsersContainer.addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-tag')) {
-        const username = e.target.dataset.username;
-        taggedUsers.delete(username);
-        updateTaggedUsersDisplay();
-    }
-});
-
-// Atualizar o envio do formulário para incluir os usuários marcados
-document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const loading = document.getElementById('loading');
-    const formData = new FormData(this);
-    
-    // Adiciona os usuários marcados ao FormData
-    formData.append('tagged_users', Array.from(taggedUsers).join(','));
-    
-    try {
-        loading.style.display = 'flex';
-        
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            window.location.href = '/';  // Redireciona para o feed
-        } else {
-            alert(data.error || 'Erro ao fazer upload');
-            console.error('Erro:', data.error);  // Log do erro no console
-        }
-    } catch (error) {
-        console.error('Erro na requisição:', error);  // Log do erro no console
-        alert('Erro ao fazer upload: ' + error.message);
-    } finally {
-        loading.style.display = 'none';
-    }
-});
-</script>
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
 {% endblock %} 
