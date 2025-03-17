@@ -332,4 +332,32 @@ def timeline():
         .order_by(Post.created_at.desc())\
         .paginate(page=page, per_page=10)
     
-    return render_template('posts/timeline.html', posts=posts) 
+    return render_template('posts/timeline.html', posts=posts)
+
+@bp.route('/timeline_preferences', methods=['POST'])
+@login_required
+def save_timeline_preferences():
+    """Salva as preferências de timeline do usuário"""
+    try:
+        sort_by = request.form.get('sort_by', 'recent')
+        admin_first = request.form.get('admin_first') == 'true'
+        
+        # Busca ou cria preferência do usuário
+        preference = TimelinePreference.query.filter_by(user_id=current_user.id).first()
+        if not preference:
+            preference = TimelinePreference(user_id=current_user.id)
+            db.session.add(preference)
+            
+        # Atualiza as preferências
+        preference.sort_by = sort_by
+        preference.admin_first = admin_first
+        
+        db.session.commit()
+        
+        flash('Preferências salvas com sucesso!', 'success')
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao salvar preferências: {str(e)}")
+        return jsonify({'success': False, 'error': 'Erro ao salvar preferências'}), 500 
