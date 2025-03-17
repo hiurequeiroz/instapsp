@@ -127,18 +127,11 @@ def update_timeline_preferences(user_id):
 @bp.route('/timeline/<int:user_id>')
 @login_required
 @admin_required
-def manage_timeline(user_id):
-    """Gerencia a timeline de um usuário específico"""
+def user_timeline(user_id):
+    """Mostra a timeline de um usuário específico"""
     user = User.query.get_or_404(user_id)
-    posts = Post.query\
-        .outerjoin(Visibility, 
-                  (Visibility.post_id == Post.id) & 
-                  (Visibility.user_id == user.id))\
-        .add_columns(Visibility.is_visible)\
-        .order_by(Post.created_at.desc())\
-        .all()
-    
-    return render_template('admin/timeline.html', user=user, posts=posts)
+    posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).all()
+    return render_template('admin/user_timeline.html', user=user, posts=posts)
 
 @bp.route('/timeline/<int:user_id>/toggle/<int:post_id>', methods=['POST'])
 @login_required
@@ -174,23 +167,23 @@ def moderate_comments():
         .order_by(Comment.created_at.desc())\
         .paginate(page=page, per_page=per_page)
     
-    # Converte o texto markdown para HTML para cada comentário
-    for comment in comments.items:
-        comment.html_text = markdown(comment.text)
-    
     return render_template('admin/comments.html', comments=comments)
 
 @bp.route('/comments/<int:comment_id>', methods=['DELETE'])
 @login_required
 @admin_required
 def delete_comment(comment_id):
-    """Deleta um comentário"""
+    """Marca um comentário como removido"""
     comment = Comment.query.get_or_404(comment_id)
     
     try:
-        db.session.delete(comment)
+        comment.is_removed = True
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Comentário removido com sucesso'})
+        return jsonify({
+            'success': True, 
+            'message': 'Comentário removido com sucesso',
+            'html': comment.html_text
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -227,39 +220,15 @@ def edit_comment(comment_id):
 @admin_required
 def toggle_post_visibility(post_id):
     """Alterna a visibilidade global de um post"""
-    post = Post.query.get_or_404(post_id)
-    
     try:
-        # Oculta/mostra o post para todos os usuários
-        users = User.query.all()
-        for user in users:
-            visibility = Visibility.query.filter_by(
-                post_id=post.id,
-                user_id=user.id
-            ).first()
-            
-            if not visibility:
-                visibility = Visibility(
-                    post_id=post.id,
-                    user_id=user.id,
-                    is_visible=False  # Oculta por padrão
-                )
-                db.session.add(visibility)
-            else:
-                visibility.is_visible = not visibility.is_visible
-        
+        post = Post.query.get_or_404(post_id)
+        post.is_hidden = not post.is_hidden
         db.session.commit()
-        
-        # Verifica o estado atual (usando o primeiro usuário como referência)
-        is_hidden = not Visibility.query.filter_by(
-            post_id=post.id,
-            user_id=users[0].id
-        ).first().is_visible
         
         return jsonify({
             'success': True,
-            'is_hidden': is_hidden,
-            'message': 'Post ' + ('ocultado' if is_hidden else 'visível')
+            'is_hidden': post.is_hidden,
+            'message': 'Post ' + ('ocultado' if post.is_hidden else 'visível')
         })
     except Exception as e:
         db.session.rollback()

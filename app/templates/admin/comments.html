@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="comments-moderation">
-    <h1>Moderação de Comentários</h1>
+    <h2>Moderação de Comentários</h2>
     
     <div class="comments-list">
         {% for comment in comments.items %}
@@ -12,7 +12,7 @@
             <div class="comment-header">
                 <div class="comment-info">
                     <span class="username">{{ comment.author.username }}</span>
-                    <span class="timestamp">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    <span class="timestamp">{{ comment.created_at|local_time }}</span>
                 </div>
                 <div class="comment-actions">
                     <button class="edit-comment" data-comment-id="{{ comment.id }}">
@@ -52,8 +52,8 @@
             
             <div class="comment-context">
                 <span class="context-label">Em resposta ao post de:</span>
-                <a href="{{ url_for('posts.index') }}#post-{{ comment.post.id }}" class="post-link">
-                    @{{ comment.post.author.username }}
+                <a href="{{ url_for('posts.feed') }}#post-{{ comment.post.id }}" class="post-link">
+                    Ver Post
                 </a>
             </div>
         </div>
@@ -84,6 +84,7 @@ document.querySelectorAll('.delete-comment').forEach(button => {
         }
 
         const commentId = this.dataset.commentId;
+        const contentDiv = document.getElementById(`content-${commentId}`);
         
         try {
             const response = await fetch(`/admin/comments/${commentId}`, {
@@ -96,8 +97,11 @@ document.querySelectorAll('.delete-comment').forEach(button => {
             const data = await response.json();
             
             if (data.success) {
-                // Remove o comentário da interface
-                document.getElementById(`comment-${commentId}`).remove();
+                // Atualiza o conteúdo com a mensagem de removido
+                contentDiv.querySelector('p').innerHTML = data.html;
+                // Desabilita os botões de edição/remoção
+                const actions = document.querySelector(`#comment-${commentId} .comment-actions`);
+                if (actions) actions.style.display = 'none';
             } else {
                 throw new Error(data.error || 'Erro ao remover comentário');
             }
@@ -108,7 +112,7 @@ document.querySelectorAll('.delete-comment').forEach(button => {
     });
 });
 
-// Funções para edição de comentários
+// Função para envolver o texto selecionado com os marcadores
 function wrapText(textarea, openTag, closeTag) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -137,20 +141,20 @@ document.querySelectorAll('.edit-comment').forEach(button => {
                 
                 switch(format) {
                     case 'bold':
-                        openTag = '<strong>';
-                        closeTag = '</strong>';
+                        openTag = '**';
+                        closeTag = '**';
                         break;
                     case 'italic':
-                        openTag = '<em>';
-                        closeTag = '</em>';
+                        openTag = '_';
+                        closeTag = '_';
                         break;
                     case 'strikethrough':
-                        openTag = '<del>';
-                        closeTag = '</del>';
+                        openTag = '~~';
+                        closeTag = '~~';
                         break;
                     case 'underline':
-                        openTag = '<u>';
-                        closeTag = '</u>';
+                        openTag = '__';
+                        closeTag = '__';
                         break;
                 }
                 
