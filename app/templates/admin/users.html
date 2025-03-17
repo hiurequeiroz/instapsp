@@ -2,44 +2,175 @@
 
 {% block title %}Gerenciar Usuários{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
-<div class="admin-users">
-    <h2>Gerenciar Usuários</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Usuário</th>
-                <th>Posts</th>
-                <th>Comentários</th>
-                <th>Curtidas</th>
-                <th>Preferência Timeline</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
+<div class="admin-container">
+    <!-- Seção de Gerenciamento de Usuários -->
+    <div class="admin-users">
+        <h2 class="mb-4">Gerenciar Usuários</h2>
+        
+        <!-- Novo painel de controle em massa -->
+        <div class="bulk-controls">
+            <h3 class="bulk-title">Modificações em Massa</h3>
+            <div class="bulk-select">
+                <select class="form-select" id="bulkTimelineSelect">
+                    <option value="">Selecione uma política global</option>
+                    <option value="recent">Mais Recentes</option>
+                    <option value="likes">+ Curtidas</option>
+                    <option value="comments">+ Comentadas</option>
+                    <option value="promotional">Promocional</option>
+                </select>
+                <button type="button" class="btn btn-primary" id="applyBulkChanges">
+                    <i class="fas fa-users"></i> Todos
+                </button>
+                <button type="button" class="btn btn-success" id="saveBulkChanges">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Ordenar por</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user, post_count, comment_count, like_count in users %}
+                    <tr>
+                        <td data-label="Usuário">
+                            {{ user.username }}
+                        </td>
+                        <td data-label="Ordenar por">
+                            <select class="form-select timeline-select" data-user-id="{{ user.id }}">
+                                <option value="recent" {% if user.timeline_preference and user.timeline_preference.sort_by == 'recent' %}selected{% endif %}>
+                                    Recentes
+                                </option>
+                                <option value="likes" {% if user.timeline_preference and user.timeline_preference.sort_by == 'likes' %}selected{% endif %}>
+                                    + Curtidas
+                                </option>
+                                <option value="comments" {% if user.timeline_preference and user.timeline_preference.sort_by == 'comments' %}selected{% endif %}>
+                                    + Comentadas
+                                </option>
+                                <option value="promotional" {% if user.timeline_preference and user.timeline_preference.sort_by == 'promotional' %}selected{% endif %}>
+                                    Promocional
+                                </option>
+                            </select>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="action-icons">
+                                <a href="#" class="action-icon save-preference" title="Salvar Preferências" data-user-id="{{ user.id }}">
+                                    <i class="fas fa-save"></i>
+                                </a>
+                                <a href="{{ url_for('admin.user_timeline', user_id=user.id) }}" class="action-icon" title="Ver Timeline">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Nova Seção de Estatísticas -->
+    <div class="admin-stats">
+        <h3 class="stats-title">Estatísticas dos Usuários</h3>
+        <div class="stats-grid">
             {% for user, post_count, comment_count, like_count in users %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ post_count }}</td>
-                <td>{{ comment_count }}</td>
-                <td>{{ like_count }}</td>
-                <td>
-                    <select class="timeline-preference" data-user-id="{{ user.id }}">
-                        {% for value, label in sort_options.items() %}
-                        <option value="{{ value }}" {% if user.timeline_preference and user.timeline_preference.sort_by == value %}selected{% endif %}>
-                            {{ label }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td>
-                    <a href="{{ url_for('admin.user_timeline', user_id=user.id) }}" class="btn">
-                        Ver Timeline
-                    </a>
-                </td>
-            </tr>
+            <div class="stats-card">
+                <div class="stats-header">
+                    <i class="fas fa-user"></i>
+                    <h4>{{ user.username }}</h4>
+                </div>
+                <div class="stats-content">
+                    <div class="stat-item">
+                        <i class="fas fa-image"></i>
+                        <span class="stat-label">Posts</span>
+                        <span class="stat-value">{{ post_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comment"></i>
+                        <span class="stat-label">Comentários</span>
+                        <span class="stat-value">{{ comment_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-heart"></i>
+                        <span class="stat-label">Curtidas</span>
+                        <span class="stat-value">{{ like_count }}</span>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bulkSelect = document.getElementById('bulkTimelineSelect');
+    const applyBulkBtn = document.getElementById('applyBulkChanges');
+    const saveBulkBtn = document.getElementById('saveBulkChanges');
+    const timelineSelects = document.querySelectorAll('.timeline-select');
+    
+    // Aplicar alterações em massa
+    applyBulkBtn.addEventListener('click', function() {
+        const selectedValue = bulkSelect.value;
+        if (!selectedValue) {
+            alert('Por favor, selecione uma política para aplicar.');
+            return;
+        }
+        
+        timelineSelects.forEach(select => {
+            select.value = selectedValue;
+        });
+    });
+    
+    // Salvar todas as alterações
+    saveBulkBtn.addEventListener('click', function() {
+        const promises = [];
+        
+        timelineSelects.forEach(select => {
+            const userId = select.dataset.userId;
+            const formData = new FormData();
+            formData.append('sort_by', select.value);
+            formData.append('admin_first', select.value === 'promotional');
+            
+            const promise = fetch('/timeline_preferences', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            promises.push(promise);
+        });
+        
+        Promise.all(promises)
+            .then(responses => Promise.all(responses.map(r => r.json())))
+            .then(results => {
+                const success = results.every(r => r.success);
+                if (success) {
+                    alert('Todas as preferências foram salvas com sucesso!');
+                } else {
+                    alert('Ocorreu um erro ao salvar algumas preferências.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar as preferências');
+            });
+    });
+});
+</script>
 {% endblock %} 
