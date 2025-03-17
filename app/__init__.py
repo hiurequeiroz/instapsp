@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from .extensions import db, login_manager, mail
 import os
 from .cli import init_cli
@@ -7,6 +7,8 @@ from markdown import markdown
 from pathlib import Path
 from dotenv import load_dotenv
 from app.config import Config
+from .utils.filters import local_time
+from flask_login import current_user
 
 # Importe todos os modelos aqui para o Alembic detectá-los
 from .models.user import User
@@ -57,5 +59,14 @@ def create_app(config_class=Config):
     @app.template_filter('markdown')
     def markdown_filter(text):
         return markdown(text) if text else ''
+
+    app.jinja_env.filters['local_time'] = local_time
+
+    # Define a página inicial como login para usuários não autenticados
+    @app.route('/')
+    def index():
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.login'))
+        return redirect(url_for('posts.feed'))  # Renomear a rota atual de posts para 'feed'
 
     return app 

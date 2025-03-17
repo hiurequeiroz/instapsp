@@ -15,12 +15,15 @@ class Post(db.Model):
     likes = db.relationship('Like', backref='post', lazy=True)
     tagged_users = db.relationship('User', secondary='tag', backref='tagged_in')
     visibilities = db.relationship('Visibility', backref='post', lazy=True)
+    is_hidden = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<Post {self.id}>'
 
     def is_liked_by(self, user):
         """Verifica se o post foi curtido pelo usuário"""
+        if not user.is_authenticated:
+            return False
         return Like.query.filter_by(user_id=user.id, post_id=self.id).first() is not None
 
     def like_count(self):
@@ -34,5 +37,9 @@ class Post(db.Model):
 
     @property
     def image_url(self):
-        """Retorna a URL da imagem para exibição"""
-        return url_for('static', filename=f'uploads/{self.image_path}') 
+        """Retorna a URL completa da imagem"""
+        if self.image_path:
+            # Garante que o caminho comece com 'uploads/'
+            path = self.image_path if self.image_path.startswith('uploads/') else f'uploads/{self.image_path}'
+            return url_for('static', filename=path)
+        return None 

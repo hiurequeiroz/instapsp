@@ -11,41 +11,41 @@
     <div id="posts-list">
         {% for post in posts %}
         <div class="post-card">
-            {% if post is mapping and post.type == 'pdf' %}  {# Verifica se é um dicionário de PDF #}
-                <!-- Card para PDF -->
+            {% if post.type == 'pdf' %}
+                <!-- Template para PDFs -->
                 <div class="post-header">
-                    <span class="username">{{ post.author.username }}</span>
-                    <span class="timestamp">{{ post.date }}</span>
+                    <span class="username">{{ post['author'].username }}</span>
+                    <span class="timestamp">{{ post['created_at']|local_time }}</span>
                 </div>
-                
-                <div class="pdf-post">
-                    <div class="pdf-icon">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
+                <div class="pdf-preview">
+                    <i class="fas fa-file-pdf"></i>
                     <div class="pdf-info">
-                        <h3>{{ post.title }}</h3>
-                        <p class="pdf-description">{{ post.description }}</p>
-                        <a href="{{ post.url }}" class="download-button" download>
-                            <i class="fas fa-download"></i> Baixar PDF
+                        <h3>{{ post['title'] }}</h3>
+                        <p class="pdf-description">{{ post['description'] }}</p>
+                        <a href="{{ post['url'] }}" class="download-button" target="_blank">
+                            <i class="fas fa-download"></i> Download PDF
                         </a>
                     </div>
                 </div>
-            {% else %}  {# É um objeto Post #}
-                <!-- Card para Imagem -->
+            {% else %}
+                <!-- Template para imagens -->
                 <div class="post-header">
                     <span class="username">{{ post.author.username }}</span>
-                    <span class="timestamp">{{ post.local_time.strftime('%d/%m/%Y %H:%M') }}</span>
+                    <span class="timestamp">{{ post.created_at|local_time }}</span>
                 </div>
-                
                 <div class="post-image">
                     <img src="{{ url_for('static', filename=post.image_path) }}" alt="Post image">
                 </div>
-                
+                {% if post.caption %}
+                    <div class="post-caption">
+                        <p><strong>{{ post.author.username }}</strong> {{ post.caption }}</p>
+                    </div>
+                {% endif %}
                 <div class="post-actions">
                     <div class="action-group">
-                        <button class="like-button {% if post.is_liked_by(current_user) %}liked{% endif %}" 
+                        <button class="like-button {% if current_user.is_authenticated and post.is_liked_by(current_user) %}liked{% endif %}" 
                                 data-post-id="{{ post.id }}">
-                            <i class="fa-heart {% if post.is_liked_by(current_user) %}fas{% else %}far{% endif %}"></i>
+                            <i class="fa-heart {% if current_user.is_authenticated and post.is_liked_by(current_user) %}fas{% else %}far{% endif %}"></i>
                         </button>
                         <span class="like-count">{{ post.like_count() }}</span>
                     </div>
@@ -61,18 +61,12 @@
                     {% endif %}
                 </div>
                 
-                {% if post.caption %}
-                <div class="post-caption">
-                    <p><strong>{{ post.author.username }}</strong> {{ post.caption }}</p>
-                </div>
-                {% endif %}
-
                 <div class="post-comments">
                     {% for comment in post.comments %}
                     <div class="comment">
                         <span class="comment-author">{{ comment.author.username }}</span>
-                        <span class="comment-text">{{ comment.text | markdown | safe }}</span>
-                        <span class="comment-time">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                        <span class="comment-text">{{ comment.html_text|safe }}</span>
+                        <span class="comment-time">{{ comment.created_at|local_time }}</span>
                     </div>
                     {% endfor %}
                     

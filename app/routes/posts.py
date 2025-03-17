@@ -12,7 +12,7 @@ from ..models.user import User
 from ..models.tag import Tag
 from ..models.visibility import Visibility
 from ..models.timeline_preference import TimelinePreference
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from datetime import datetime
 import pytz  # Adicione esta importação no topo do arquivo
 
@@ -38,51 +38,69 @@ def utc_to_local(utc_dt):
     local_dt = utc_dt.replace(tzinfo=pytz.UTC).astimezone(local_tz)
     return local_dt
 
-@bp.route('/')
+@bp.route('/feed')
 @login_required
-def index():
-    """Página inicial com feed de fotos"""
+def feed():
+    """Feed de fotos e PDFs"""
+    # Verifica preferência do usuário
+    preference = TimelinePreference.query.filter_by(user_id=current_user.id).first()
+    sort_by = preference.sort_by if preference else 'recent'
+    admin_first = bool(preference.admin_first) if preference and preference.admin_first is not None else False
+
+    # Busca todos os posts não ocultos
+    posts = Post.query.filter(
+        or_(Post.is_hidden.is_(None), Post.is_hidden == False)  # noqa
+    ).order_by(Post.created_at.desc()).all()
+
+    # Debug da ordenação admin first
+    if admin_first:
+        admin_posts = [p for p in posts if p.author.is_admin]
+        other_posts = [p for p in posts if not p.author.is_admin]
+        
+        if admin_posts:
+            posts = [admin_posts[0]] + other_posts + admin_posts[1:]
+
+    # Busca PDFs
     UPLOAD_FOLDER, PDF_FOLDER, IMAGE_FOLDER = get_upload_folders()
-    posts = []
+    pdf_posts = []
     
-    # Lista PDFs
     for filename in os.listdir(PDF_FOLDER):
         if filename.endswith('.pdf'):
             file_path = os.path.join(PDF_FOLDER, filename)
-            title = filename.split('_', 2)[-1].replace('.pdf', '')
+            # Extrai título e descrição do nome do arquivo
+            parts = filename.split('_', 2)
+            if len(parts) >= 3:
+                title = parts[2].replace('.pdf', '')
+                description = f"Material didático: {title}"
+            else:
+                title = filename.replace('.pdf', '')
+                description = "Material didático compartilhado"
+                
             file_timestamp = os.path.getmtime(file_path)
-            # Converte timestamp para datetime local
-            local_time = utc_to_local(datetime.fromtimestamp(file_timestamp))
-            posts.append({
+            local_time = datetime.fromtimestamp(file_timestamp)
+            
+            pdf_posts.append({
                 'type': 'pdf',
                 'title': title,
                 'url': url_for('static', filename=f'uploads/pdfs/{filename}'),
-                'date': local_time.strftime('%d/%m/%Y %H:%M'),
-                'timestamp': file_timestamp,
-                'description': 'Artigo PDF compartilhado',
-                'author': current_user
+                'created_at': local_time,
+                'author': current_user,
+                'description': description  # Descrição mais informativa
             })
     
-    # Busca posts de imagem do banco de dados
-    image_posts = Post.query.order_by(Post.created_at.desc()).all()
+    # Combina e ordena todos os posts
+    all_posts = []
+    all_posts.extend(posts)  # Adiciona posts de imagem
+    all_posts.extend(pdf_posts)    # Adiciona PDFs
     
-    # Combina PDFs e posts de imagem
-    for post in image_posts:
-        # Converte o created_at para horário local
-        post.local_time = utc_to_local(post.created_at)
-        posts.append(post)
+    # Ordena PDFs junto com as imagens conforme a preferência
+    if sort_by == 'recent':
+        all_posts.sort(
+            key=lambda x: x['created_at'] if isinstance(x, dict) else x.created_at,
+            reverse=True
+        )
     
-    # Função auxiliar para obter a data de ordenação
-    def get_sort_date(item):
-        if hasattr(item, 'created_at'):
-            return item.created_at.timestamp()
-        else:
-            return item['timestamp']
-    
-    # Ordena por data
-    posts.sort(key=get_sort_date, reverse=True)
-    
-    return render_template('posts/index.html', posts=posts)
+    return render_template('posts/index.html', posts=all_posts)
 
 @bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -132,7 +150,7 @@ def upload():
         db.session.commit()
         
         flash('Imagem enviada com sucesso!', 'success')
-        return redirect(url_for('posts.index'))
+        return redirect(url_for('posts.feed'))
         
     except Exception as e:
         print(f"Erro no upload: {str(e)}")
@@ -166,7 +184,7 @@ def add_comment(post_id):
                 }
             })
     
-    return redirect(url_for('posts.index'))
+    return redirect(url_for('posts.feed'))
 
 @bp.route('/post/<int:post_id>/like', methods=['POST'])
 @login_required
@@ -300,4 +318,18 @@ def upload_pdf():
     except Exception as e:
         print(f"Erro no upload do PDF: {str(e)}")
         flash(f'Erro ao fazer upload do PDF: {str(e)}', 'error')
-        return redirect(url_for('posts.upload')) 
+        return redirect(url_for('posts.upload'))
+
+@bp.route('/timeline')
+@login_required
+def timeline():
+    """Timeline personalizada do usuário"""
+    page = request.args.get('page', 1, type=int)
+    
+    # Atualizar a query para incluir o filtro is_hidden
+    posts = Post.query\
+        .filter_by(is_hidden=False)\
+        .order_by(Post.created_at.desc())\
+        .paginate(page=page, per_page=10)
+    
+    return render_template('posts/timeline.html', posts=posts) 

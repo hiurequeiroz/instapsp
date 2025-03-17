@@ -23,14 +23,14 @@
 
     <div class="posts-grid">
         {% for post in posts %}
-        <div class="post-card admin-view" id="post-{{ post.id }}" class="{{ 'hidden' if post.is_hidden }}">
+        <div class="post-card admin-view {{ 'hidden' if post.is_hidden }}" id="post-{{ post.id }}">
             <div class="post-header">
                 <span class="username">{{ post.author.username }}</span>
                 <span class="timestamp">{{ post.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
             </div>
             
             <div class="post-image">
-                <img src="{{ url_for('static', filename='uploads/' + post.image_path) }}" alt="Post image">
+                <img src="{{ url_for('static', filename=post.image_path) }}" alt="Post image">
             </div>
             
             <div class="post-stats">
@@ -88,6 +88,7 @@
 document.querySelectorAll('.toggle-visibility-btn').forEach(button => {
     button.addEventListener('click', async function() {
         const postId = this.dataset.postId;
+        const postCard = document.getElementById(`post-${postId}`);
         const icon = this.querySelector('i');
         const status = this.querySelector('.visibility-status');
         
@@ -106,6 +107,13 @@ document.querySelectorAll('.toggle-visibility-btn').forEach(button => {
                 icon.className = data.is_hidden ? 'fas fa-eye-slash' : 'fas fa-eye';
                 status.textContent = data.is_hidden ? 'Oculto' : 'Visível';
                 this.title = data.is_hidden ? 'Mostrar post' : 'Ocultar post';
+                
+                // Adicionar estas linhas para atualizar a visibilidade visual do post
+                if (data.is_hidden) {
+                    postCard.classList.add('hidden');
+                } else {
+                    postCard.classList.remove('hidden');
+                }
             } else {
                 throw new Error(data.error || 'Erro ao alterar visibilidade');
             }

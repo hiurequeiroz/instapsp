@@ -1722,8 +1722,13 @@ input:checked + .slider:before {
 }
 
 /* Estilo para posts ocultos */
-.post-card.hidden {
-    opacity: 0.7;
+.post-card.admin-view.hidden {
+    opacity: 0.5;
+    background-color: #f8f9fa;
+}
+
+.post-card.admin-view.hidden img {
+    filter: grayscale(50%);
 }
 
 #loading {
@@ -2385,4 +2390,8 @@ textarea.form-control {
 
 .upload-button i {
     font-size: 18px;
+}
+
+.hidden {
+    opacity: 0.5;  /* ou outro efeito visual que você preferir */
 } 

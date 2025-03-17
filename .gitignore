@@ -11,6 +11,8 @@ virtualenv/
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
 
 # Arquivos de mídia/uploads
 uploads/
@@ -27,4 +29,25 @@ migrations/__pycache__/
 
 # Outros
 .env
-*.log 
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Arquivos de upload
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+!app/static/uploads/images/.gitkeep
+!app/static/uploads/pdfs/.gitkeep
+
+# Ambiente virtual
+venv/
+__pycache__/
+*.pyc
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db 

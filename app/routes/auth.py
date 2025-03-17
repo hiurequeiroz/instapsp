@@ -37,6 +37,9 @@ def register():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Rota para login de usuários"""
+    if current_user.is_authenticated:
+        return redirect(url_for('posts.feed'))
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -44,7 +47,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            return redirect(url_for('posts.index'))
+            return redirect(url_for('posts.feed'))
             
         flash('Usuário ou senha inválidos')
         
@@ -61,7 +64,7 @@ def logout():
 def reset_password_request():
     """Rota para solicitar reset de senha"""
     if current_user.is_authenticated:
-        return redirect(url_for('posts.index'))
+        return redirect(url_for('posts.feed'))
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -80,7 +83,7 @@ def reset_password_request():
 def reset_password(username, code):
     """Rota para resetar a senha usando o código"""
     if current_user.is_authenticated:
-        return redirect(url_for('posts.index'))
+        return redirect(url_for('posts.feed'))
     
     user = User.query.filter_by(username=username).first()
     if not user or not user.verify_reset_code(code):
