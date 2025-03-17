@@ -6,6 +6,7 @@ class TimelinePreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
     sort_by = db.Column(db.String(20), default='recent')  # recent, likes, comments, admin_first
+    admin_first = db.Column(db.Boolean, default=False)  # Nova coluna
     created_at = db.Column(db.DateTime, default=db.func.now())
     updated_at = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 

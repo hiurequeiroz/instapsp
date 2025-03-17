@@ -4,61 +4,42 @@
 
 {% block content %}
 <div class="admin-users">
-    <h1>Gerenciar Usuários</h1>
-    
-    <div class="users-grid">
-        {% for user, post_count, comment_count, like_count in users %}
-        <div class="user-card">
-            <div class="user-header">
-                <span class="username">{{ user.username }}</span>
-                {% if user.is_admin %}
-                <span class="admin-badge">Admin</span>
-                {% endif %}
-            </div>
-            
-            <div class="user-stats">
-                <div class="stat">
-                    <i class="fas fa-image"></i>
-                    <span>{{ post_count }}</span>
-                    <label>Posts</label>
-                </div>
-                <div class="stat">
-                    <i class="fas fa-comment"></i>
-                    <span>{{ comment_count }}</span>
-                    <label>Comentários</label>
-                </div>
-                <div class="stat">
-                    <i class="fas fa-heart"></i>
-                    <span>{{ like_count }}</span>
-                    <label>Curtidas</label>
-                </div>
-            </div>
-
-            <div class="user-preferences">
-                <h4>Preferências de Timeline</h4>
-                <form class="timeline-preferences-form" data-user-id="{{ user.id }}">
-                    <select name="sort_by" class="timeline-sort">
+    <h2>Gerenciar Usuários</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Posts</th>
+                <th>Comentários</th>
+                <th>Curtidas</th>
+                <th>Preferência Timeline</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user, post_count, comment_count, like_count in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ post_count }}</td>
+                <td>{{ comment_count }}</td>
+                <td>{{ like_count }}</td>
+                <td>
+                    <select class="timeline-preference" data-user-id="{{ user.id }}">
                         {% for value, label in sort_options.items() %}
-                        <option value="{{ value }}" 
-                                {% if user.timeline_preference and user.timeline_preference.sort_by == value %}selected{% endif %}>
+                        <option value="{{ value }}" {% if user.timeline_preference and user.timeline_preference.sort_by == value %}selected{% endif %}>
                             {{ label }}
                         </option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-small">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                </form>
-                <div class="save-feedback"></div>
-            </div>
-
-            <div class="user-actions">
-                <a href="{{ url_for('admin.manage_timeline', user_id=user.id) }}" class="btn">
-                    <i class="fas fa-stream"></i> Gerenciar Posts
-                </a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.user_timeline', user_id=user.id) }}" class="btn">
+                        Ver Timeline
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %} 
