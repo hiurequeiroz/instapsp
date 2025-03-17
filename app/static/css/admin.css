@@ -1,0 +1,317 @@
+/* Reset e Variáveis */
+:root {
+    --primary-color: #0d6efd;
+    --primary-light: #0dcaf0;
+    --dark: #343a40;
+    --gray: #6c757d;
+    --light: #f8f9fa;
+    --border-radius: 8px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Layout Container */
+.admin-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem;
+}
+
+/* Tabela de Usuários */
+.admin-users {
+    background-color: var(--light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+}
+
+.admin-table {
+    width: 100%;
+    background-color: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.admin-table thead th {
+    background-color: var(--dark);
+    color: white;
+    padding: 1rem;
+    border: none;
+}
+
+.admin-table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+/* Componentes da Tabela */
+.timeline-select {
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 14px;
+    width: 160px;
+}
+
+.action-icons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-icon {
+    color: var(--primary-color);
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.action-icon:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.action-icon.save-preference {
+    color: #198754;
+}
+
+.action-icon.save-preference:hover {
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+/* Seção de Estatísticas */
+.admin-stats {
+    background-color: var(--light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+}
+
+.stats-title {
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+/* Cards de Estatísticas */
+.stats-card {
+    background-color: white;
+    border-radius: 12px !important;
+    padding: 1.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02),
+                0 4px 8px rgba(13, 110, 253, 0.02);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    opacity: 0.7;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.stats-header i {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+.stats-header h4 {
+    margin: 0;
+    color: var(--dark);
+    font-size: 1.1rem;
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background-color: rgba(13, 110, 253, 0.03);
+    border: 1px solid rgba(13, 110, 253, 0.05);
+    transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-color: rgba(13, 110, 253, 0.1);
+}
+
+.stat-item i {
+    color: var(--primary-color);
+    opacity: 0.8;
+    width: 20px;
+    text-align: center;
+}
+
+.stat-label {
+    color: var(--gray);
+    flex: 1;
+}
+
+.stat-value {
+    font-weight: 600;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .admin-table {
+        display: block;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .admin-table td {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+        border: none;
+    }
+
+    .admin-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: var(--gray);
+    }
+
+    .timeline-select {
+        width: 100%;
+    }
+
+    .action-icons {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-container {
+        padding: 0.5rem;
+    }
+
+    .admin-table tbody tr {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-users,
+    .admin-stats {
+        padding: 1rem;
+    }
+}
+
+/* Adicione estes estilos ao seu arquivo CSS */
+
+.bulk-controls {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.bulk-title {
+    color: var(--dark);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.bulk-select {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.bulk-select select {
+    max-width: 300px;
+    flex: 1;
+}
+
+.bulk-select .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    height: 32px;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.bulk-select .btn i {
+    font-size: 16px;
+}
+
+/* Responsividade para os controles em massa */
+@media (max-width: 768px) {
+    .bulk-select {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .bulk-select select,
+    .bulk-select .btn {
+        width: 100%;
+    }
+} 

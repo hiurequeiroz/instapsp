@@ -1,0 +1,49 @@
+<form id="timelinePreferencesForm">
+    <div class="form-group">
+        <label>Ordenar por:</label>
+        <div class="d-flex align-items-center">
+            <select class="form-control timeline-preference mr-2" name="sort_by">
+                <option value="recent" {% if preference and preference.sort_by == 'recent' %}selected{% endif %}>Mais recentes</option>
+                <option value="oldest" {% if preference and preference.sort_by == 'oldest' %}selected{% endif %}>Mais antigos</option>
+            </select>
+            
+            <div class="form-check mx-3">
+                <input type="checkbox" class="form-check-input" name="admin_first" value="true" 
+                       {% if preference and preference.admin_first %}checked{% endif %}>
+                <label class="form-check-label">Posts de admin primeiro</label>
+            </div>
+
+            <button type="button" class="btn btn-success mr-2" id="savePreferences">Salvar</button>
+            <a href="{{ url_for('posts.timeline') }}" class="btn btn-primary">Ver</a>
+        </div>
+    </div>
+</form>
+
+<script>
+document.getElementById('savePreferences').addEventListener('click', function() {
+    const formData = new FormData();
+    formData.append('sort_by', document.querySelector('.timeline-preference').value);
+    formData.append('admin_first', document.querySelector('[name="admin_first"]').checked);
+
+    fetch('/timeline_preferences', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Preferências salvas com sucesso!');
+            location.reload();
+        } else {
+            alert('Erro ao salvar preferências: ' + (data.error || 'Erro desconhecido'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao salvar preferências');
+    });
+});
+</script> 
